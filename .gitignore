@@ -1,0 +1,17 @@
+# Secrets
+.env
+
+# Generated data
+vector_store/
+packets/
+state.db
+
+# Your source library (large binaries) — remove this line if you DO want to
+# commit the books.
+books/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

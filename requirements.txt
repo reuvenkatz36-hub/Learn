@@ -1,0 +1,22 @@
+# --- Telegram bot framework (async, v20+) ---
+python-telegram-bot==21.6
+
+# --- LLM orchestration: official Anthropic SDK (Claude Opus 4.8) ---
+anthropic>=0.40.0
+
+# --- Vector store + local embeddings ---
+chromadb>=0.5.0
+sentence-transformers>=3.0.0
+
+# --- Book parsing ---
+pypdf>=4.2.0
+
+# --- Scheduling (daily Auto-Mode) ---
+apscheduler>=3.10.0
+
+# --- PDF / Markdown rendering of the reading packet ---
+markdown2>=2.4.0
+xhtml2pdf>=0.2.15
+
+# --- Config / secrets ---
+python-dotenv>=1.0.0
