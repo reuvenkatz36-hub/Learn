@@ -132,12 +132,14 @@ async function generateKnowledgeGraph(
 
     const edges = [
       ...sectionNodes.map((sn: { id: string }) => ({ user_id: userId, roadmap_id: roadmapId, source_id: rootNode.id, target_id: sn.id })),
-      ...skillNodes.map((sk: { id: string }, i: number) => {
-        const parentSection = sectionNodes[Math.floor(i / 2)]
-        return parentSection
-          ? { user_id: userId, roadmap_id: roadmapId, source_id: parentSection.id, target_id: sk.id }
-          : null
-      }).filter(Boolean)
+      ...skillNodes
+        .map((sk: { id: string }, i: number) => {
+          const parentSection = sectionNodes[Math.floor(i / 2)]
+          return parentSection
+            ? { user_id: userId, roadmap_id: roadmapId, source_id: parentSection.id, target_id: sk.id }
+            : null
+        })
+        .filter((e): e is { user_id: string; roadmap_id: string; source_id: string; target_id: string } => e !== null)
     ]
 
     if (edges.length > 0) {
