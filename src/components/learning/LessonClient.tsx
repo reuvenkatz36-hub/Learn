@@ -81,9 +81,7 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
     }
   }, [lines.length, lessonId, applyStyles])
 
-  useEffect(() => {
-    applyStyles(0)
-  }, [lines.length, applyStyles])
+  useEffect(() => { applyStyles(0) }, [lines.length, applyStyles])
 
   const onScroll = useCallback(() => {
     if (rafRef.current) return
@@ -132,20 +130,23 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
 
   return (
     <div className="flex flex-col h-full bg-white">
+      {/* Progress + XP */}
       <div className="shrink-0 px-5 py-2 flex items-center gap-3 border-b border-gray-100">
-        <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${scrollPct * 100}%`, transition: 'width 0.3s linear' }} />
+        <div className="flex-1 h-0.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full bg-amber-400 rounded-full" style={{ width: `${scrollPct * 100}%`, transition: 'width 0.3s linear' }} />
         </div>
         <div className="relative flex items-center gap-1 shrink-0">
-          <Zap className="w-3.5 h-3.5 text-indigo-500" />
-          <span className="text-sm font-bold text-indigo-600 tabular-nums">{xp} XP</span>
+          <Zap className="w-3.5 h-3.5 text-amber-500" />
+          <span className="text-sm font-bold text-amber-600 tabular-nums">{xp} XP</span>
           {xpPop && (
-            <span className="pointer-events-none absolute -top-7 right-0 text-indigo-500 font-bold text-xs whitespace-nowrap animate-xp-pop">
+            <span className="pointer-events-none absolute -top-7 right-0 text-amber-500 font-bold text-xs whitespace-nowrap animate-xp-pop">
               +10 XP
             </span>
           )}
         </div>
       </div>
+
+      {/* Scroll area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div style={{ height: '42vh' }} />
         <div className="flex flex-col items-center px-8 gap-7" style={{ maxWidth: 520, margin: '0 auto' }}>
@@ -170,8 +171,8 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
           ))}
         </div>
         <div style={{ height: '42vh' }} className="flex flex-col items-center justify-start pt-12 gap-4">
-          <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center">
-            <CheckCircle className="w-7 h-7 text-indigo-500" />
+          <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center">
+            <CheckCircle className="w-7 h-7 text-amber-500" />
           </div>
           <p className="text-gray-400 text-sm">You read the whole lesson</p>
           <button
@@ -179,7 +180,7 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
               localStorage.removeItem(`read_pos_${lessonId}`)
               onFinish()
             }}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-semibold text-sm transition-colors"
+            className="bg-amber-400 hover:bg-amber-300 text-zinc-950 px-8 py-3 rounded-xl font-bold text-sm transition-colors"
           >
             Complete lesson
           </button>
@@ -235,12 +236,12 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
 
   if (streaming && sections.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 gap-4">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+      <div className="flex flex-col items-center justify-center h-96 gap-4 bg-white">
+        <Loader2 className="w-7 h-7 animate-spin text-amber-400" />
         <p className="text-gray-400 text-sm font-medium">Crafting your lesson...</p>
         <div className="flex gap-1.5">
           {[0, 1, 2].map(i => (
-            <div key={i} className="w-2 h-2 bg-indigo-200 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+            <div key={i} className="w-1.5 h-1.5 bg-amber-200 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
           ))}
         </div>
       </div>
@@ -249,13 +250,13 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
 
   if (done) {
     return (
-      <div className="flex flex-col items-center justify-center h-full py-20 gap-6 text-center px-6">
-        <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center">
-          <CheckCircle className="w-8 h-8 text-indigo-500" />
+      <div className="flex flex-col items-center justify-center h-full py-20 gap-6 text-center px-6 bg-white">
+        <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center">
+          <CheckCircle className="w-8 h-8 text-amber-500" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900">Lesson complete</h2>
-        <p className="text-gray-500">You earned <span className="font-bold text-indigo-600">+{xpEarned} XP</span></p>
-        <button onClick={() => router.push(`/learn/${roadmapId}`)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-colors">
+        <h2 className="text-2xl font-bold text-gray-900">Lesson complete</h2>
+        <p className="text-gray-400">You earned <span className="font-bold text-amber-500">+{xpEarned} XP</span></p>
+        <button onClick={() => router.push(`/learn/${roadmapId}`)} className="bg-amber-400 hover:bg-amber-300 text-zinc-950 px-6 py-3 rounded-xl font-bold text-sm transition-colors">
           Back to course
         </button>
       </div>
@@ -309,12 +310,12 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
 
   if (!quiz) return (
     <div className="text-center py-16">
-      <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <Brain className="w-7 h-7 text-indigo-400" />
+      <div className="w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <Brain className="w-7 h-7 text-zinc-500" />
       </div>
-      <h3 className="font-bold text-gray-900 text-lg mb-1">Test yourself</h3>
-      <p className="text-gray-400 text-sm mb-6">5 questions based on this lesson</p>
-      <button onClick={generateQuiz} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2 mx-auto">
+      <h3 className="font-bold text-white text-lg mb-1">Test yourself</h3>
+      <p className="text-zinc-500 text-sm mb-6">5 questions based on this lesson</p>
+      <button onClick={generateQuiz} disabled={loading} className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-zinc-950 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mx-auto">
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} Generate Quiz
       </button>
     </div>
@@ -327,20 +328,26 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
     const label = pct >= 80 ? 'Excellent' : pct >= 60 ? 'Good job' : 'Keep going'
     return (
       <div>
-        <div className={cn('p-6 rounded-2xl border mb-6 text-center', pct >= 80 ? 'bg-green-50 border-green-100' : pct >= 60 ? 'bg-amber-50 border-amber-100' : 'bg-red-50 border-red-100')}>
-          <div className={cn('text-4xl font-bold mb-1', pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-amber-600' : 'text-red-500')}>{result.score}/{result.maxScore}</div>
-          <div className={cn('text-sm font-medium', pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-amber-600' : 'text-red-500')}>{pct}% — {label}</div>
+        <div className={cn('p-6 rounded-xl border mb-6 text-center', pct >= 80 ? 'bg-emerald-500/10 border-emerald-500/20' : pct >= 60 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-red-500/10 border-red-500/20')}>
+          <div className={cn('text-4xl font-bold mb-1', pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400')}>{result.score}/{result.maxScore}</div>
+          <div className={cn('text-sm font-medium', pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400')}>{pct}% — {label}</div>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {questions.map((q, i) => {
             const correct = answers[q.id] === q.correctIndex
             return (
-              <div key={q.id} className={cn('p-4 rounded-2xl border', correct ? 'border-green-100 bg-green-50' : 'border-red-100 bg-red-50')}>
-                <p className="font-medium text-sm text-gray-900 mb-3">{i + 1}. {q.question}</p>
+              <div key={q.id} className={cn('p-4 rounded-xl border', correct ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-red-500/20 bg-red-500/5')}>
+                <p className="font-medium text-sm text-white mb-3">{i + 1}. {q.question}</p>
                 <div className="space-y-1.5">
-                  {q.options.map((opt, oi) => <div key={oi} className={cn('text-xs px-3 py-2 rounded-xl', oi === q.correctIndex && 'bg-green-100 text-green-700 font-medium', oi === answers[q.id] && oi !== q.correctIndex && 'bg-red-100 text-red-600', oi !== q.correctIndex && oi !== answers[q.id] && 'text-gray-400')}>{opt}</div>)}
+                  {q.options.map((opt, oi) => (
+                    <div key={oi} className={cn('text-xs px-3 py-2 rounded-lg',
+                      oi === q.correctIndex && 'bg-emerald-500/20 text-emerald-400 font-medium',
+                      oi === answers[q.id] && oi !== q.correctIndex && 'bg-red-500/20 text-red-400',
+                      oi !== q.correctIndex && oi !== answers[q.id] && 'text-zinc-600',
+                    )}>{opt}</div>
+                  ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-3 italic">{q.explanation}</p>
+                <p className="text-xs text-zinc-600 mt-3 italic">{q.explanation}</p>
               </div>
             )
           })}
@@ -350,16 +357,24 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {questions.map((q, i) => (
-        <div key={q.id} className="p-5 bg-gray-50 border border-gray-100 rounded-2xl">
-          <p className="font-semibold text-sm text-gray-900 mb-3">{i + 1}. {q.question}</p>
+        <div key={q.id} className="p-4 bg-zinc-800/50 border border-zinc-700 rounded-xl">
+          <p className="font-semibold text-sm text-white mb-3">{i + 1}. {q.question}</p>
           <div className="space-y-2">
-            {q.options.map((opt, oi) => <button key={oi} onClick={() => setAnswers(prev => ({ ...prev, [q.id]: oi }))} className={cn('w-full text-left text-sm px-4 py-3 rounded-xl border transition-all', answers[q.id] === oi ? 'border-indigo-400 bg-indigo-50 text-indigo-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300')}>{opt}</button>)}
+            {q.options.map((opt, oi) => (
+              <button key={oi} onClick={() => setAnswers(prev => ({ ...prev, [q.id]: oi }))}
+                className={cn('w-full text-left text-sm px-4 py-3 rounded-xl border transition-all',
+                  answers[q.id] === oi
+                    ? 'border-amber-400/50 bg-amber-400/10 text-amber-400 font-medium'
+                    : 'border-zinc-700 bg-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
+                )}>{opt}</button>
+            ))}
           </div>
         </div>
       ))}
-      <button onClick={submitQuiz} disabled={loading || Object.keys(answers).length < questions.length} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2">
+      <button onClick={submitQuiz} disabled={loading || Object.keys(answers).length < questions.length}
+        className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-zinc-950 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Submit Quiz
       </button>
     </div>
@@ -411,12 +426,12 @@ function AssignmentSection({ lessonId, existingAssignment }: { lessonId: string;
 
   if (!assignment) return (
     <div className="text-center py-16">
-      <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <PenLine className="w-7 h-7 text-indigo-400" />
+      <div className="w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <PenLine className="w-7 h-7 text-zinc-500" />
       </div>
-      <h3 className="font-bold text-gray-900 text-lg mb-1">Practical assignment</h3>
-      <p className="text-gray-400 text-sm mb-6">Apply what you&apos;ve learned with a real task</p>
-      <button onClick={generateAssignment} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2 mx-auto">
+      <h3 className="font-bold text-white text-lg mb-1">Practical assignment</h3>
+      <p className="text-zinc-500 text-sm mb-6">Apply what you&apos;ve learned with a real task</p>
+      <button onClick={generateAssignment} disabled={loading} className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-zinc-950 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mx-auto">
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PenLine className="w-4 h-4" />} Get Assignment
       </button>
     </div>
@@ -424,29 +439,36 @@ function AssignmentSection({ lessonId, existingAssignment }: { lessonId: string;
 
   return (
     <div className="space-y-4">
-      <div className="p-5 bg-indigo-50 border border-indigo-100 rounded-2xl">
-        <h3 className="font-semibold text-sm text-indigo-700 mb-2">Your Task</h3>
-        <p className="text-sm text-gray-700 leading-relaxed">{assignment.prompt}</p>
+      <div className="p-4 bg-amber-400/10 border border-amber-400/20 rounded-xl">
+        <h3 className="font-semibold text-xs text-amber-400 uppercase tracking-wider mb-2">Your Task</h3>
+        <p className="text-sm text-zinc-300 leading-relaxed">{assignment.prompt}</p>
       </div>
       {!assignment.submission && (
         <div>
-          <textarea value={submission} onChange={e => setSubmission(e.target.value)} rows={8} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:border-indigo-400 resize-none" placeholder="Write your response here..." />
-          <button onClick={submitAssignment} disabled={streaming || !submission.trim()} className="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2">
+          <textarea value={submission} onChange={e => setSubmission(e.target.value)} rows={8}
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400/50 resize-none placeholder-zinc-600"
+            placeholder="Write your response here..." />
+          <button onClick={submitAssignment} disabled={streaming || !submission.trim()}
+            className="mt-3 w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-zinc-950 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
             {streaming ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {streaming ? 'Getting feedback...' : 'Submit for AI Feedback'}
           </button>
         </div>
       )}
       {(feedback || assignment.ai_feedback) && (
-        <div className="p-5 bg-white border border-gray-100 rounded-2xl shadow-sm">
+        <div className="p-4 bg-zinc-800 border border-zinc-700 rounded-xl">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-sm text-gray-900">AI Feedback</h3>
-            {score !== null && <span className={cn('text-sm font-bold px-3 py-1 rounded-full', score >= 80 ? 'bg-green-50 text-green-600' : score >= 60 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500')}>{score}/100</span>}
+            <h3 className="font-semibold text-xs text-zinc-400 uppercase tracking-wider">AI Feedback</h3>
+            {score !== null && (
+              <span className={cn('text-sm font-bold px-3 py-1 rounded-lg',
+                score >= 80 ? 'bg-emerald-500/10 text-emerald-400' : score >= 60 ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'
+              )}>{score}/100</span>
+            )}
           </div>
-          <div className="prose prose-sm prose-gray max-w-none text-gray-600">
+          <div className="prose prose-sm prose-invert max-w-none text-zinc-400">
             <ReactMarkdown>{feedback || assignment.ai_feedback || ''}</ReactMarkdown>
           </div>
-          {streaming && <span className="animate-pulse text-indigo-400 text-lg">▊</span>}
+          {streaming && <span className="animate-pulse text-amber-400 text-lg">▊</span>}
         </div>
       )}
     </div>
@@ -464,28 +486,35 @@ export default function LessonClient({ lesson, roadmap, roadmapId, existingQuiz,
   ] as const
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 shrink-0">
-        <button onClick={() => router.back()} className="w-11 h-11 rounded-full bg-gray-100 active:bg-gray-300 hover:bg-gray-200 flex items-center justify-center transition-colors">
-          <X className="w-5 h-5 text-gray-700" />
+    <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-800 shrink-0">
+        <button onClick={() => router.back()} className="w-9 h-9 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 flex items-center justify-center transition-colors flex-shrink-0">
+          <X className="w-4 h-4 text-zinc-400" />
         </button>
         <div className="flex-1 min-w-0">
-          {roadmap && <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide truncate">{roadmap.title}</p>}
-          <p className="text-sm font-semibold text-gray-900 truncate">{lesson.title}</p>
+          {roadmap && <p className="text-[10px] text-zinc-600 font-semibold uppercase tracking-wide truncate">{roadmap.title}</p>}
+          <p className="text-sm font-semibold text-white truncate">{lesson.title}</p>
         </div>
       </div>
-      <div className="flex border-b border-gray-100 shrink-0 px-2">
+
+      {/* Tabs */}
+      <div className="flex border-b border-zinc-800 shrink-0">
         {tabs.map(({ id, icon: Icon, label }) => (
-          <button key={id} onClick={() => setActiveTab(id)} className={cn('flex-1 py-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all border-b-2 -mb-px', activeTab === id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-600')}>
+          <button key={id} onClick={() => setActiveTab(id)}
+            className={cn('flex-1 py-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all border-b-2 -mb-px',
+              activeTab === id ? 'border-amber-400 text-amber-400' : 'border-transparent text-zinc-600 hover:text-zinc-400'
+            )}>
             <Icon className="w-3.5 h-3.5" />
             {label}
           </button>
         ))}
       </div>
+
       <div className="flex-1 overflow-hidden">
         {activeTab === 'content' && <LessonContent lesson={lesson} roadmapId={roadmapId} />}
-        {activeTab === 'quiz' && <div className="h-full overflow-y-auto p-6"><QuizSection lessonId={lesson.id} existingQuiz={existingQuiz} /></div>}
-        {activeTab === 'assignment' && <div className="h-full overflow-y-auto p-6"><AssignmentSection lessonId={lesson.id} existingAssignment={existingAssignment} /></div>}
+        {activeTab === 'quiz' && <div className="h-full overflow-y-auto p-6 bg-zinc-950"><QuizSection lessonId={lesson.id} existingQuiz={existingQuiz} /></div>}
+        {activeTab === 'assignment' && <div className="h-full overflow-y-auto p-6 bg-zinc-950"><AssignmentSection lessonId={lesson.id} existingAssignment={existingAssignment} /></div>}
       </div>
     </div>
   )
