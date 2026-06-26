@@ -51,17 +51,18 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
   const rafRef = useRef<number | null>(null)
   const restored = useRef(false)
 
+  // Use transform:scale (not font-size) — layout box never changes size, no reflow
   const applyStyles = useCallback((activeIdx: number) => {
     lineRefs.current.forEach((el, i) => {
       if (!el) return
       const dist = Math.abs(i - activeIdx)
       const isActive = dist === 0
-      const isAdjacent = dist === 1
-      el.style.fontSize = isActive ? '36px' : isAdjacent ? '28px' : dist === 2 ? '22px' : '18px'
-      el.style.opacity = isActive ? '1' : isAdjacent ? '0.45' : dist === 2 ? '0.25' : '0.12'
+      const scale = isActive ? 1.55 : dist === 1 ? 1.15 : dist === 2 ? 0.95 : 0.85
+      const opacity = isActive ? 1 : dist === 1 ? 0.45 : dist === 2 ? 0.25 : 0.12
+      el.style.transform = `scale(${scale})`
+      el.style.opacity = String(opacity)
       el.style.color = isActive ? '#0f172a' : '#374151'
       el.style.fontWeight = isActive ? (el.dataset.title === 'true' ? '800' : '600') : '400'
-      el.style.lineHeight = isActive ? '1.3' : '1.2'
     })
   }, [])
 
@@ -158,11 +159,12 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
               className="text-center w-full cursor-default select-none"
               style={{
                 fontFamily: 'Georgia, "Times New Roman", serif',
-                fontSize: '18px',
+                fontSize: '20px',
+                lineHeight: 1.4,
                 opacity: 0.12,
                 color: '#374151',
-                transition: 'font-size 0.25s ease, opacity 0.25s ease, color 0.2s ease, font-weight 0.2s ease',
-                lineHeight: 1.2,
+                transformOrigin: 'center center',
+                transition: 'transform 0.22s ease, opacity 0.22s ease, color 0.18s ease, font-weight 0.18s ease',
               }}
             >
               {line.text}
@@ -172,12 +174,7 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
         <div style={{ height: '42vh' }} className="flex flex-col items-center justify-start pt-12 gap-4">
           <div className="text-5xl">🎉</div>
           <p className="text-gray-400 text-sm">You read the whole lesson</p>
-          <button
-            onClick={() => { localStorage.removeItem(`read_pos_${lessonId}`); onFinish() }}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-semibold text-sm transition-colors"
-          >
-            Complete lesson ✓
-          </button>
+          <button onClick={() => { localStorage.removeItem(`read_pos_${lessonId}`); onFinish() }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-semibold text-sm transition-colors">Complete lesson ✓</button>
         </div>
       </div>
     </div>
@@ -255,7 +252,6 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
   )
   const generateQuiz = async () => { setLoading(true); const res = await fetch('/api/quiz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId, action: 'generate' }) }); setQuiz(await res.json()); setLoading(false) }
   const submitQuiz = async () => { if (!quiz) return; setLoading(true); const res = await fetch('/api/quiz', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ quizId: quiz.id, answers, lessonId }) }); const data = await res.json(); setResult({ score: data.score, maxScore: data.maxScore }); setSubmitted(true); setLoading(false) }
-
   if (!quiz) return (
     <div className="text-center py-16">
       <div className="text-5xl mb-4">🧠</div>
@@ -266,7 +262,6 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
       </button>
     </div>
   )
-
   const questions = quiz.questions as unknown as QuizQuestion[]
   if (submitted && result) {
     const pct = Math.round((result.score / result.maxScore) * 100)
