@@ -364,7 +364,7 @@ function AssignmentSection({ lessonId, existingAssignment }: { lessonId: string;
           <PenLine className="w-7 h-7 text-indigo-500" />
         </div>
         <h3 className="font-semibold text-gray-900 mb-1">Practical assignment</h3>
-        <p className="text-gray-400 text-sm mb-6">Apply what you've learned with a real task</p>
+        <p className="text-gray-400 text-sm mb-6">Apply what you&apos;ve learned with a real task</p>
         <button
           onClick={generateAssignment}
           disabled={loading}

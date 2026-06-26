@@ -3,7 +3,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Profile, Roadmap, DailyActivity } from '@/types/database'
 import { Plus, BookOpen, Trophy, Flame, Target, ChevronRight, Brain } from 'lucide-react'
-import { format, subDays } from 'date-fns'
 import NewRoadmapModal from '@/components/dashboard/NewRoadmapModal'
 import { cn } from '@/lib/utils'
 
@@ -25,10 +24,6 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
     { icon: BookOpen, label: 'Lessons', value: String(totalLessons), sub: 'completed', color: 'text-indigo-500', bg: 'bg-indigo-50' },
     { icon: Target, label: 'Quizzes', value: String(totalQuizzes), sub: 'taken', color: 'text-green-500', bg: 'bg-green-50' },
   ]
-
-  // suppress unused import warning
-  void format
-  void subDays
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
