@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase-server'
+import { createClientFromRequest } from '@/lib/supabase-server'
 import { anthropic, MODEL } from '@/lib/anthropic'
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createServerClient()
+    const supabase = await createClientFromRequest(req)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -67,6 +67,7 @@ Create exactly 8 sections. Make it practical and progressive. No markdown, just 
     }))
 
     await supabase.from('lessons').insert(lessonInserts)
+
     await generateKnowledgeGraph(supabase, user.id, roadmap.id, roadmapData, topic)
 
     return NextResponse.json({ id: roadmap.id })
@@ -77,7 +78,7 @@ Create exactly 8 sections. Make it practical and progressive. No markdown, just 
 }
 
 async function generateKnowledgeGraph(
-  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  supabase: Awaited<ReturnType<typeof createClientFromRequest>>,
   userId: string,
   roadmapId: string,
   roadmapData: { title: string; sections: Array<{ title: string; topics: string[] }> },
@@ -85,7 +86,6 @@ async function generateKnowledgeGraph(
 ) {
   try {
     const nodes: Array<{ user_id: string; roadmap_id: string; label: string; node_type: 'topic' | 'concept' | 'skill'; position: { x: number; y: number }; mastery_level: number }> = []
-
     nodes.push({
       user_id: userId,
       roadmap_id: roadmapId,
@@ -127,19 +127,17 @@ async function generateKnowledgeGraph(
     if (!insertedNodes || insertedNodes.length === 0) return
 
     const rootNode = insertedNodes[0]
-    const sectionNodes = insertedNodes.slice(1).filter((n: { node_type: string }) => n.node_type === 'concept')
-    const skillNodes = insertedNodes.filter((n: { node_type: string }) => n.node_type === 'skill')
+    const sectionNodes = insertedNodes.slice(1).filter(n => n.node_type === 'concept')
+    const skillNodes = insertedNodes.filter(n => n.node_type === 'skill')
 
     const edges = [
-      ...sectionNodes.map((sn: { id: string }) => ({ user_id: userId, roadmap_id: roadmapId, source_id: rootNode.id, target_id: sn.id })),
-      ...skillNodes
-        .map((sk: { id: string }, i: number) => {
-          const parentSection = sectionNodes[Math.floor(i / 2)]
-          return parentSection
-            ? { user_id: userId, roadmap_id: roadmapId, source_id: parentSection.id, target_id: sk.id }
-            : null
-        })
-        .filter((e): e is { user_id: string; roadmap_id: string; source_id: string; target_id: string } => e !== null)
+      ...sectionNodes.map(sn => ({ user_id: userId, roadmap_id: roadmapId, source_id: rootNode.id, target_id: sn.id })),
+      ...skillNodes.map((sk, i) => {
+        const parentSection = sectionNodes[Math.floor(i / 2)]
+        return parentSection
+          ? { user_id: userId, roadmap_id: roadmapId, source_id: parentSection.id, target_id: sk.id }
+          : null
+      }).filter((e): e is { user_id: string; roadmap_id: string; source_id: string; target_id: string } => e !== null)
     ]
 
     if (edges.length > 0) {

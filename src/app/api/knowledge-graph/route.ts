@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase-server'
+import { createClientFromRequest } from '@/lib/supabase-server'
 
 export async function GET(req: Request) {
-  const supabase = await createServerClient()
+  const supabase = await createClientFromRequest(req)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const supabase = await createServerClient()
+  const supabase = await createClientFromRequest(req)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
