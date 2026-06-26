@@ -5,11 +5,12 @@ import { X, Loader2, Zap } from 'lucide-react'
 
 interface Props {
   onClose: () => void
+  initialTopic?: string
 }
 
-export default function NewRoadmapModal({ onClose }: Props) {
+export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
   const router = useRouter()
-  const [topic, setTopic] = useState('')
+  const [topic, setTopic] = useState(initialTopic ?? '')
   const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

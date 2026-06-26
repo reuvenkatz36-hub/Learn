@@ -2,9 +2,24 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Profile, Roadmap, DailyActivity } from '@/types/database'
-import { Plus, BookOpen, Trophy, Flame, Target, ChevronRight, Brain } from 'lucide-react'
+import { Plus, BookOpen, Trophy, Flame, Target, ChevronRight, Brain, Compass } from 'lucide-react'
 import NewRoadmapModal from '@/components/dashboard/NewRoadmapModal'
 import { cn } from '@/lib/utils'
+
+const TOPIC_SUGGESTIONS = [
+  { emoji: '🤖', label: 'Machine Learning', category: 'Tech' },
+  { emoji: '💰', label: 'Personal Finance', category: 'Life' },
+  { emoji: '🐍', label: 'Python Programming', category: 'Tech' },
+  { emoji: '🎨', label: 'UI/UX Design', category: 'Creative' },
+  { emoji: '🧠', label: 'Psychology', category: 'Science' },
+  { emoji: '📈', label: 'Stock Market Investing', category: 'Finance' },
+  { emoji: '🌍', label: 'Spanish Language', category: 'Language' },
+  { emoji: '📸', label: 'Photography', category: 'Creative' },
+  { emoji: '🏋️', label: 'Fitness & Nutrition', category: 'Health' },
+  { emoji: '⚡', label: 'React & Next.js', category: 'Tech' },
+  { emoji: '🎸', label: 'Guitar', category: 'Music' },
+  { emoji: '🧮', label: 'Mathematics', category: 'Science' },
+]
 
 interface Props {
   profile: Profile | null
@@ -14,6 +29,7 @@ interface Props {
 
 export default function DashboardClient({ profile, roadmaps, activity }: Props) {
   const [showNewRoadmap, setShowNewRoadmap] = useState(false)
+  const [suggestedTopic, setSuggestedTopic] = useState<string | undefined>()
 
   const totalLessons = activity.reduce((s, a) => s + a.lessons_completed, 0)
   const totalQuizzes = activity.reduce((s, a) => s + a.quizzes_taken, 0)
@@ -27,6 +43,7 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
+      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
@@ -43,6 +60,7 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
         </button>
       </div>
 
+      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {stats.map(({ icon: Icon, label, value, sub, color, bg }) => (
           <div key={label} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
@@ -55,6 +73,28 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
         ))}
       </div>
 
+      {/* Discover Topics */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Compass className="w-4 h-4 text-indigo-500" />
+          <h2 className="font-bold text-gray-900 text-lg">Discover</h2>
+          <span className="text-xs text-gray-400 font-medium">— tap any topic to start learning</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {TOPIC_SUGGESTIONS.map(({ emoji, label }) => (
+            <button
+              key={label}
+              onClick={() => { setSuggestedTopic(label); setShowNewRoadmap(true) }}
+              className="flex items-center gap-1.5 bg-white border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-sm font-medium px-3.5 py-2 rounded-full transition-all shadow-sm"
+            >
+              <span>{emoji}</span>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Courses */}
       <div>
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-bold text-gray-900 text-lg">Your Courses</h2>
@@ -121,7 +161,7 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
       </div>
 
       {showNewRoadmap && (
-        <NewRoadmapModal onClose={() => setShowNewRoadmap(false)} />
+        <NewRoadmapModal onClose={() => { setShowNewRoadmap(false); setSuggestedTopic(undefined) }} initialTopic={suggestedTopic} />
       )}
     </div>
   )
