@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Lesson, Roadmap, Quiz, Assignment, LessonContentSection, QuizQuestion } from '@/types/database'
 import { X, PenLine, Loader2, Zap } from 'lucide-react'
@@ -14,6 +14,161 @@ interface Props {
   existingAssignment: Assignment | null
 }
 
+interface Para {
+  text: string
+  isTitle?: boolean
+  sectionIndex: number
+}
+
+function buildParas(sections: LessonContentSection[]): Para[] {
+  const out: Para[] = []
+  sections.forEach((s, si) => {
+    if (s.title) out.push({ text: s.title, isTitle: true, sectionIndex: si })
+    const chunks = (s.content ?? '').split(/\n{2,}/).filter(t => t.trim())
+    chunks.forEach(t => out.push({ text: t.trim(), isTitle: false, sectionIndex: si }))
+  })
+  return out
+}
+
+function FocusReader({ paras, lessonId, onFinish }: { paras: Para[]; lessonId: string; onFinish: () => void }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const paraRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [xp, setXp] = useState(0)
+  const [xpPop, setXpPop] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const lastXpIdx = useRef(-1)
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const restored = useRef(false)
+
+  useEffect(() => {
+    if (restored.current || paras.length === 0) return
+    restored.current = true
+    const saved = localStorage.getItem(`read_pos_${lessonId}`)
+    if (saved) {
+      const idx = parseInt(saved, 10)
+      if (idx > 0 && idx < paras.length) {
+        setTimeout(() => {
+          paraRefs.current[idx]?.scrollIntoView({ behavior: 'instant', block: 'center' })
+        }, 80)
+      }
+    }
+  }, [paras.length, lessonId])
+
+  const onScroll = useCallback(() => {
+    const container = scrollRef.current
+    if (!container) return
+    const containerMid = container.scrollTop + container.clientHeight / 2
+    const total = container.scrollHeight - container.clientHeight
+    setScrollProgress(total > 0 ? Math.min(container.scrollTop / total, 1) : 0)
+
+    let closestIdx = 0
+    let closestDist = Infinity
+    paraRefs.current.forEach((el, i) => {
+      if (!el) return
+      const elMid = el.offsetTop + el.offsetHeight / 2
+      const dist = Math.abs(elMid - containerMid)
+      if (dist < closestDist) { closestDist = dist; closestIdx = i }
+    })
+    setActiveIdx(closestIdx)
+
+    const xpMilestone = Math.floor(closestIdx / 5)
+    if (xpMilestone > lastXpIdx.current) {
+      lastXpIdx.current = xpMilestone
+      setXp(prev => prev + 10)
+      setXpPop(true)
+      setTimeout(() => setXpPop(false), 800)
+    }
+
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      localStorage.setItem(`read_pos_${lessonId}`, String(closestIdx))
+    }, 1500)
+  }, [lessonId])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [onScroll])
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="shrink-0 px-5 py-2 flex items-center gap-3 border-b border-gray-100">
+        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full bg-indigo-500 rounded-full transition-all duration-300" style={{ width: `${scrollProgress * 100}%` }} />
+        </div>
+        <div className="relative flex items-center gap-1 shrink-0">
+          <Zap className="w-3.5 h-3.5 text-indigo-500" />
+          <span className="text-sm font-bold text-indigo-600 tabular-nums">{xp} XP</span>
+          {xpPop && (
+            <span className="pointer-events-none absolute -top-6 right-0 text-indigo-500 font-bold text-xs animate-xp-pop whitespace-nowrap">+10 XP</span>
+          )}
+        </div>
+      </div>
+
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        <div style={{ height: '45vh' }} />
+        {paras.map((para, i) => {
+          const dist = Math.abs(i - activeIdx)
+          const isFocused = dist === 0
+          const isNear = dist === 1
+          const fontSize = isFocused ? 20 : isNear ? 17 : dist === 2 ? 15 : 13
+          const opacity = isFocused ? 1 : isNear ? 0.65 : dist === 2 ? 0.4 : 0.2
+          const scale = isFocused ? 1.02 : isNear ? 1 : 0.97
+          return (
+            <div
+              key={i}
+              ref={el => { paraRefs.current[i] = el }}
+              className="px-6 mx-auto transition-all duration-300 ease-out"
+              style={{
+                maxWidth: 640,
+                fontSize,
+                opacity,
+                transform: `scale(${scale})`,
+                transformOrigin: 'center top',
+                fontFamily: 'Georgia, serif',
+                lineHeight: isFocused ? 1.85 : 1.6,
+                marginBottom: para.isTitle ? 12 : 20,
+                color: isFocused ? '#111827' : '#374151',
+                fontWeight: para.isTitle ? 700 : 400,
+              }}
+            >
+              {para.isTitle ? (
+                <h2>{para.text}</h2>
+              ) : (
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <span>{children}</span>,
+                    strong: ({ children }) => <strong style={{ fontWeight: 600, color: '#111827' }}>{children}</strong>,
+                    em: ({ children }) => <em style={{ fontStyle: 'italic' }}>{children}</em>,
+                  }}
+                >
+                  {para.text}
+                </ReactMarkdown>
+              )}
+            </div>
+          )
+        })}
+        <div style={{ height: '40vh' }} className="flex flex-col items-center justify-start pt-10 gap-4">
+          <div className="text-4xl">🎉</div>
+          <p className="text-gray-400 text-sm font-medium">You finished the lesson</p>
+          <button
+            onClick={() => {
+              localStorage.removeItem(`read_pos_${lessonId}`)
+              onFinish()
+            }}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-semibold text-sm transition-colors shadow-sm"
+          >
+            Complete lesson ✓
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: string }) {
   const router = useRouter()
   const [sections, setSections] = useState<LessonContentSection[]>(
@@ -22,17 +177,14 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
       : []
   )
   const [streaming, setStreaming] = useState(false)
-  const [activeSection, setActiveSection] = useState(0)
-  const [xp, setXp] = useState(0)
-  const [xpPops, setXpPops] = useState<number[]>([])
   const [done, setDone] = useState(false)
+  const [xpEarned, setXpEarned] = useState(0)
   const initialized = useRef(false)
 
   useEffect(() => {
     if (sections.length > 0 || initialized.current) return
     initialized.current = true
     setStreaming(true)
-
     fetch('/api/lesson', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -42,7 +194,6 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
       const decoder = new TextDecoder()
       let buffer = ''
       if (!reader) return
-
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -62,23 +213,6 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
     }).catch(() => setStreaming(false))
   }, [lesson.id, sections.length])
 
-  const awardXP = () => {
-    setXp(prev => prev + 10)
-    const now = Date.now()
-    setXpPops(prev => [...prev, now])
-    setTimeout(() => setXpPops(prev => prev.filter(k => k !== now)), 900)
-  }
-
-  const goNext = () => {
-    if (activeSection < sections.length - 1) {
-      awardXP()
-      setActiveSection(i => i + 1)
-    } else {
-      awardXP()
-      setDone(true)
-    }
-  }
-
   if (streaming && sections.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
@@ -95,102 +229,29 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
 
   if (done) {
     return (
-      <div className="flex flex-col items-center justify-center h-full py-20 gap-6 text-center">
-        <div className="text-6xl animate-bounce">🎉</div>
+      <div className="flex flex-col items-center justify-center h-full py-20 gap-6 text-center px-6">
+        <div className="text-6xl">🎉</div>
         <div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Lesson complete!</h2>
-          <p className="text-gray-400 text-base">You earned <span className="font-bold text-indigo-600">{xp} XP</span> on this lesson</p>
+          <p className="text-gray-400 text-base">You earned <span className="font-bold text-indigo-600">{xpEarned} XP</span></p>
         </div>
-        <button
-          onClick={() => router.push(`/learn/${roadmapId}`)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-colors"
-        >
+        <button onClick={() => router.push(`/learn/${roadmapId}`)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-colors">
           Back to course
         </button>
       </div>
     )
   }
 
-  const section = sections[activeSection]
-  const progress = sections.length > 0 ? ((activeSection + 1) / sections.length) * 100 : 0
-
+  const paras = buildParas(sections)
   return (
-    <div className="flex flex-col h-full">
-      <div className="h-1 bg-gray-100 shrink-0">
-        <div className="h-full bg-indigo-500 transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
-      </div>
-
-      <div className="flex items-center justify-between px-6 py-3 shrink-0 relative">
-        <div className="flex gap-1">
-          {sections.map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                'h-1 rounded-full transition-all duration-300',
-                i < activeSection ? 'bg-indigo-500 w-4' : i === activeSection ? 'bg-indigo-400 w-6' : 'bg-gray-200 w-4'
-              )}
-            />
-          ))}
-        </div>
-        <div className="relative flex items-center gap-1.5">
-          <Zap className="w-4 h-4 text-indigo-500" />
-          <span className="font-bold text-indigo-600 text-sm tabular-nums">{xp} XP</span>
-          {xpPops.map(k => (
-            <span key={k} className="pointer-events-none absolute right-0 top-0 text-indigo-500 font-bold text-sm animate-xp-pop">+10 XP</span>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-6 py-8">
-          {section?.type && section.type !== 'text' && (
-            <span className={cn(
-              'inline-block text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-5',
-              section.type === 'key_point' && 'bg-amber-50 text-amber-600',
-              section.type === 'example' && 'bg-blue-50 text-blue-600',
-              section.type === 'exercise' && 'bg-green-50 text-green-600',
-            )}>
-              {section.type?.replace('_', ' ')}
-            </span>
-          )}
-          <h2 className="text-3xl font-bold text-gray-900 leading-snug mb-6" style={{ fontFamily: 'Georgia, serif' }}>
-            {section?.title}
-          </h2>
-          <div className="text-gray-700 leading-[1.9] text-[17px]" style={{ fontFamily: 'Georgia, serif' }}>
-            <ReactMarkdown
-              components={{
-                p: ({ children }) => <p className="mb-5">{children}</p>,
-                strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
-                em: ({ children }) => <em className="italic text-gray-600">{children}</em>,
-                ul: ({ children }) => <ul className="list-disc pl-6 mb-5 space-y-1.5">{children}</ul>,
-                ol: ({ children }) => <ol className="list-decimal pl-6 mb-5 space-y-1.5">{children}</ol>,
-                li: ({ children }) => <li className="text-gray-700">{children}</li>,
-                blockquote: ({ children }) => <blockquote className="border-l-4 border-indigo-300 pl-4 italic text-gray-500 my-5">{children}</blockquote>,
-              }}
-            >
-              {section?.content ?? ''}
-            </ReactMarkdown>
-          </div>
-        </div>
-      </div>
-
-      <div className="shrink-0 px-6 py-4 border-t border-gray-100 bg-white flex items-center justify-between gap-3">
-        <button
-          onClick={() => setActiveSection(i => Math.max(0, i - 1))}
-          disabled={activeSection === 0}
-          className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 disabled:opacity-0 transition-all"
-        >
-          ← Back
-        </button>
-        <span className="text-xs text-gray-300 font-medium shrink-0">{activeSection + 1} / {sections.length}</span>
-        <button
-          onClick={goNext}
-          className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-all shadow-sm shadow-indigo-200"
-        >
-          {activeSection < sections.length - 1 ? 'Continue →' : 'Finish ✓'}
-        </button>
-      </div>
-    </div>
+    <FocusReader
+      paras={paras}
+      lessonId={lesson.id}
+      onFinish={() => {
+        setXpEarned(Math.max(10, Math.floor(paras.length / 5) * 10))
+        setDone(true)
+      }}
+    />
   )
 }
 
@@ -206,8 +267,7 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
   const generateQuiz = async () => {
     setLoading(true)
     const res = await fetch('/api/quiz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId, action: 'generate' }) })
-    const data = await res.json()
-    setQuiz(data)
+    setQuiz(await res.json())
     setLoading(false)
   }
 
@@ -221,19 +281,16 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
     setLoading(false)
   }
 
-  if (!quiz) {
-    return (
-      <div className="text-center py-16">
-        <div className="text-5xl mb-4">🧠</div>
-        <h3 className="font-bold text-gray-900 text-lg mb-1">Test yourself</h3>
-        <p className="text-gray-400 text-sm mb-6">5 questions based on this lesson</p>
-        <button onClick={generateQuiz} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2 mx-auto transition-colors">
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-          Generate Quiz
-        </button>
-      </div>
-    )
-  }
+  if (!quiz) return (
+    <div className="text-center py-16">
+      <div className="text-5xl mb-4">🧠</div>
+      <h3 className="font-bold text-gray-900 text-lg mb-1">Test yourself</h3>
+      <p className="text-gray-400 text-sm mb-6">5 questions based on this lesson</p>
+      <button onClick={generateQuiz} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2 mx-auto">
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} Generate Quiz
+      </button>
+    </div>
+  )
 
   const questions = quiz.questions as unknown as QuizQuestion[]
 
@@ -252,9 +309,7 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
               <div key={q.id} className={cn('p-4 rounded-2xl border', correct ? 'border-green-100 bg-green-50' : 'border-red-100 bg-red-50')}>
                 <p className="font-medium text-sm text-gray-900 mb-3">{i + 1}. {q.question}</p>
                 <div className="space-y-1.5">
-                  {q.options.map((opt, oi) => (
-                    <div key={oi} className={cn('text-xs px-3 py-2 rounded-xl', oi === q.correctIndex && 'bg-green-100 text-green-700 font-medium', oi === answers[q.id] && oi !== q.correctIndex && 'bg-red-100 text-red-600', oi !== q.correctIndex && oi !== answers[q.id] && 'text-gray-400')}>{opt}</div>
-                  ))}
+                  {q.options.map((opt, oi) => <div key={oi} className={cn('text-xs px-3 py-2 rounded-xl', oi === q.correctIndex && 'bg-green-100 text-green-700 font-medium', oi === answers[q.id] && oi !== q.correctIndex && 'bg-red-100 text-red-600', oi !== q.correctIndex && oi !== answers[q.id] && 'text-gray-400')}>{opt}</div>)}
                 </div>
                 <p className="text-xs text-gray-500 mt-3 italic">{q.explanation}</p>
               </div>
@@ -271,13 +326,11 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
         <div key={q.id} className="p-5 bg-gray-50 border border-gray-100 rounded-2xl">
           <p className="font-semibold text-sm text-gray-900 mb-3">{i + 1}. {q.question}</p>
           <div className="space-y-2">
-            {q.options.map((opt, oi) => (
-              <button key={oi} onClick={() => setAnswers(prev => ({ ...prev, [q.id]: oi }))} className={cn('w-full text-left text-sm px-4 py-3 rounded-xl border transition-all', answers[q.id] === oi ? 'border-indigo-400 bg-indigo-50 text-indigo-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300')}>{opt}</button>
-            ))}
+            {q.options.map((opt, oi) => <button key={oi} onClick={() => setAnswers(prev => ({ ...prev, [q.id]: oi }))} className={cn('w-full text-left text-sm px-4 py-3 rounded-xl border transition-all', answers[q.id] === oi ? 'border-indigo-400 bg-indigo-50 text-indigo-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300')}>{opt}</button>)}
           </div>
         </div>
       ))}
-      <button onClick={submitQuiz} disabled={loading || Object.keys(answers).length < questions.length} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors">
+      <button onClick={submitQuiz} disabled={loading || Object.keys(answers).length < questions.length} className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2">
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Submit Quiz
       </button>
     </div>
@@ -295,8 +348,7 @@ function AssignmentSection({ lessonId, existingAssignment }: { lessonId: string;
   const generateAssignment = async () => {
     setLoading(true)
     const res = await fetch('/api/assignment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId }) })
-    const data = await res.json()
-    setAssignment(data)
+    setAssignment(await res.json())
     setLoading(false)
   }
 
@@ -328,18 +380,16 @@ function AssignmentSection({ lessonId, existingAssignment }: { lessonId: string;
     setStreaming(false)
   }
 
-  if (!assignment) {
-    return (
-      <div className="text-center py-16">
-        <div className="text-5xl mb-4">✍️</div>
-        <h3 className="font-bold text-gray-900 text-lg mb-1">Practical assignment</h3>
-        <p className="text-gray-400 text-sm mb-6">Apply what you&apos;ve learned with a real task</p>
-        <button onClick={generateAssignment} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2 mx-auto transition-colors">
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PenLine className="w-4 h-4" />} Get Assignment
-        </button>
-      </div>
-    )
-  }
+  if (!assignment) return (
+    <div className="text-center py-16">
+      <div className="text-5xl mb-4">✍️</div>
+      <h3 className="font-bold text-gray-900 text-lg mb-1">Practical assignment</h3>
+      <p className="text-gray-400 text-sm mb-6">Apply what you&apos;ve learned with a real task</p>
+      <button onClick={generateAssignment} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2 mx-auto">
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PenLine className="w-4 h-4" />} Get Assignment
+      </button>
+    </div>
+  )
 
   return (
     <div className="space-y-4">
@@ -349,8 +399,8 @@ function AssignmentSection({ lessonId, existingAssignment }: { lessonId: string;
       </div>
       {!assignment.submission && (
         <div>
-          <textarea value={submission} onChange={e => setSubmission(e.target.value)} rows={8} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:border-indigo-400 transition-colors resize-none" placeholder="Write your response here..." />
-          <button onClick={submitAssignment} disabled={streaming || !submission.trim()} className="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors">
+          <textarea value={submission} onChange={e => setSubmission(e.target.value)} rows={8} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:border-indigo-400 resize-none" placeholder="Write your response here..." />
+          <button onClick={submitAssignment} disabled={streaming || !submission.trim()} className="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2">
             {streaming ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {streaming ? 'Getting feedback...' : 'Submit for AI Feedback'}
           </button>
@@ -385,10 +435,7 @@ export default function LessonClient({ lesson, roadmap, roadmapId, existingQuiz,
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 shrink-0">
-        <button
-          onClick={() => router.push(`/learn/${roadmapId}`)}
-          className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-        >
+        <button onClick={() => router.push(`/learn/${roadmapId}`)} className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
           <X className="w-4 h-4 text-gray-600" />
         </button>
         <div className="flex-1 min-w-0">
@@ -396,22 +443,11 @@ export default function LessonClient({ lesson, roadmap, roadmapId, existingQuiz,
           <p className="text-sm font-semibold text-gray-900 truncate">{lesson.title}</p>
         </div>
       </div>
-
       <div className="flex border-b border-gray-100 shrink-0 px-2">
         {tabs.map(({ id, label }) => (
-          <button
-            key={id}
-            onClick={() => setActiveTab(id)}
-            className={cn(
-              'flex-1 py-3 text-xs font-semibold transition-all border-b-2 -mb-px',
-              activeTab === id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-600'
-            )}
-          >
-            {label}
-          </button>
+          <button key={id} onClick={() => setActiveTab(id)} className={cn('flex-1 py-3 text-xs font-semibold transition-all border-b-2 -mb-px', activeTab === id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-600')}>{label}</button>
         ))}
       </div>
-
       <div className="flex-1 overflow-hidden">
         {activeTab === 'content' && <LessonContent lesson={lesson} roadmapId={roadmapId} />}
         {activeTab === 'quiz' && <div className="h-full overflow-y-auto p-6"><QuizSection lessonId={lesson.id} existingQuiz={existingQuiz} /></div>}
