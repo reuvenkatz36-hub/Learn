@@ -2,25 +2,24 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Profile, Roadmap, DailyActivity } from '@/types/database'
-import { Plus, BookOpen, Trophy, Flame, Target, ChevronRight, Brain, Compass, Cpu, TrendingUp, Code2, Palette, Globe, Camera, Activity, Layers, Music2, Calculator, DollarSign } from 'lucide-react'
+import { Plus, ChevronRight, Brain, Zap, Flame, BookOpen } from 'lucide-react'
 import NewRoadmapModal from '@/components/dashboard/NewRoadmapModal'
 import WelcomeModal from '@/components/dashboard/WelcomeModal'
 import { cn } from '@/lib/utils'
 
-const TOPIC_SUGGESTIONS = [
-  { icon: Cpu, label: 'Machine Learning', color: 'text-indigo-500', bg: 'bg-indigo-50' },
-  { icon: DollarSign, label: 'Personal Finance', color: 'text-green-500', bg: 'bg-green-50' },
-  { icon: Code2, label: 'Python Programming', color: 'text-indigo-500', bg: 'bg-indigo-50' },
-  { icon: Palette, label: 'UI/UX Design', color: 'text-violet-500', bg: 'bg-violet-50' },
-  { icon: Brain, label: 'Psychology', color: 'text-blue-500', bg: 'bg-blue-50' },
-  { icon: TrendingUp, label: 'Stock Market', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-  { icon: Globe, label: 'Spanish Language', color: 'text-amber-500', bg: 'bg-amber-50' },
-  { icon: Camera, label: 'Photography', color: 'text-violet-500', bg: 'bg-violet-50' },
-  { icon: Activity, label: 'Fitness & Nutrition', color: 'text-rose-500', bg: 'bg-rose-50' },
-  { icon: Layers, label: 'React & Next.js', color: 'text-indigo-500', bg: 'bg-indigo-50' },
-  { icon: Music2, label: 'Guitar', color: 'text-purple-500', bg: 'bg-purple-50' },
-  { icon: Calculator, label: 'Mathematics', color: 'text-blue-500', bg: 'bg-blue-50' },
+const TOPICS = [
+  'Machine Learning', 'Personal Finance', 'Python Programming',
+  'UI/UX Design', 'Psychology', 'Stock Market',
+  'Spanish Language', 'Photography', 'Fitness & Nutrition',
+  'React & Next.js', 'Guitar', 'Mathematics',
 ]
+
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 17) return 'Good afternoon'
+  return 'Good evening'
+}
 
 interface Props {
   profile: Profile | null
@@ -34,108 +33,82 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
   const [showWelcome, setShowWelcome] = useState(false)
 
   useEffect(() => {
-    if (!localStorage.getItem('mastery_welcomed')) {
-      setShowWelcome(true)
-    }
+    if (!localStorage.getItem('mastery_welcomed')) setShowWelcome(true)
   }, [])
 
-  const dismissWelcome = () => {
-    localStorage.setItem('mastery_welcomed', '1')
-    setShowWelcome(false)
-  }
-
-  const startFromWelcome = () => {
-    localStorage.setItem('mastery_welcomed', '1')
-    setShowWelcome(false)
-    setShowNewRoadmap(true)
-  }
+  const dismissWelcome = () => { localStorage.setItem('mastery_welcomed', '1'); setShowWelcome(false) }
+  const startFromWelcome = () => { localStorage.setItem('mastery_welcomed', '1'); setShowWelcome(false); setShowNewRoadmap(true) }
 
   const totalLessons = activity.reduce((s, a) => s + a.lessons_completed, 0)
-  const totalQuizzes = activity.reduce((s, a) => s + a.quizzes_taken, 0)
-
-  const stats = [
-    { icon: Trophy, label: 'Total XP', value: (profile?.total_xp ?? 0).toLocaleString(), color: 'text-amber-500', bg: 'bg-amber-50' },
-    { icon: Flame, label: 'Day Streak', value: `${profile?.streak_count ?? 0}`, sub: 'days', color: 'text-orange-500', bg: 'bg-orange-50' },
-    { icon: BookOpen, label: 'Lessons', value: String(totalLessons), sub: 'completed', color: 'text-indigo-500', bg: 'bg-indigo-50' },
-    { icon: Target, label: 'Quizzes', value: String(totalQuizzes), sub: 'taken', color: 'text-green-500', bg: 'bg-green-50' },
-  ]
 
   return (
-    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-5 sm:p-8 max-w-2xl mx-auto">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-8 pt-2">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back, {profile?.display_name ?? 'Learner'}
+          <p className="text-zinc-500 text-sm mb-1">{getGreeting()}</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+            {profile?.display_name ?? 'Learner'}
           </h1>
-          <p className="text-gray-400 text-sm mt-1">Keep up the great work</p>
         </div>
         <button
           onClick={() => setShowNewRoadmap(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 transition-colors text-white px-4 py-2.5 rounded-xl text-sm font-semibold"
+          className="flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 transition-colors text-zinc-950 px-4 py-2 rounded-lg text-sm font-bold mt-1"
         >
-          <Plus className="w-4 h-4" />
-          New Course
+          <Plus className="w-3.5 h-3.5" />
+          New
         </button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map(({ icon: Icon, label, value, sub, color, bg }) => (
-          <div key={label} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center mb-3', bg)}>
-              <Icon className={cn('w-5 h-5', color)} />
-            </div>
-            <div className="text-2xl font-bold text-gray-900">{value} {sub && <span className="text-base font-normal text-gray-400">{sub}</span>}</div>
-            <div className="text-xs text-gray-400 mt-0.5">{label}</div>
+      {/* Stats */}
+      <div className="flex items-center gap-6 mb-10 pb-8 border-b border-zinc-800">
+        <div>
+          <div className="text-2xl font-bold text-white tabular-nums">{(profile?.total_xp ?? 0).toLocaleString()}</div>
+          <div className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
+            <Zap className="w-3 h-3 text-amber-400" /> XP earned
           </div>
-        ))}
-      </div>
-
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <Compass className="w-4 h-4 text-indigo-500" />
-          <h2 className="font-bold text-gray-900 text-lg">Discover</h2>
-          <span className="text-xs text-gray-400 font-medium">— tap any topic to start learning</span>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {TOPIC_SUGGESTIONS.map(({ icon: Icon, label, color, bg }) => (
-            <button
-              key={label}
-              onClick={() => { setSuggestedTopic(label); setShowNewRoadmap(true) }}
-              className="flex items-center gap-2 bg-white border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-sm font-medium px-3.5 py-2 rounded-full transition-all shadow-sm"
-            >
-              <div className={cn('w-4 h-4 rounded flex items-center justify-center', bg)}>
-                <Icon className={cn('w-2.5 h-2.5', color)} />
-              </div>
-              {label}
-            </button>
-          ))}
+        <div className="w-px h-8 bg-zinc-800" />
+        <div>
+          <div className="text-2xl font-bold text-white tabular-nums">{profile?.streak_count ?? 0}</div>
+          <div className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
+            <Flame className="w-3 h-3 text-orange-400" /> day streak
+          </div>
+        </div>
+        <div className="w-px h-8 bg-zinc-800" />
+        <div>
+          <div className="text-2xl font-bold text-white tabular-nums">{totalLessons}</div>
+          <div className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
+            <BookOpen className="w-3 h-3 text-zinc-500" /> lessons done
+          </div>
         </div>
       </div>
 
-      <div>
+      {/* Courses */}
+      <div className="mb-10">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-bold text-gray-900 text-lg">Your Courses</h2>
-          <Link href="/learn" className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1 font-medium">
-            View all <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
+          <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Your Courses</h2>
+          {roadmaps.length > 0 && (
+            <Link href="/learn" className="text-xs text-zinc-600 hover:text-zinc-400 flex items-center gap-0.5 transition-colors">
+              View all <ChevronRight className="w-3 h-3" />
+            </Link>
+          )}
         </div>
 
         {roadmaps.length === 0 ? (
-          <div className="text-center py-20 bg-gray-50 border border-gray-100 rounded-2xl">
-            <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Brain className="w-7 h-7 text-indigo-400" />
-            </div>
-            <p className="font-semibold text-gray-900 mb-1">No courses yet</p>
-            <p className="text-gray-400 text-sm mb-6">Generate your first AI course to get started</p>
+          <div className="border border-dashed border-zinc-800 rounded-xl p-10 text-center">
+            <Brain className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
+            <p className="text-zinc-300 font-semibold mb-1">No courses yet</p>
+            <p className="text-zinc-600 text-sm mb-6">Generate your first AI course to get started</p>
             <button
               onClick={() => setShowNewRoadmap(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white px-5 py-2.5 rounded-xl text-sm font-semibold"
+              className="bg-amber-400 hover:bg-amber-300 transition-colors text-zinc-950 px-5 py-2.5 rounded-lg text-sm font-bold"
             >
               Create your first course
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-2">
             {roadmaps.slice(0, 6).map(roadmap => {
               const sections = Array.isArray(roadmap.sections) ? (roadmap.sections as unknown as Array<{ completed?: boolean }>) : []
               const progress = sections.length > 0 ? Math.round((sections.filter(s => s.completed).length / sections.length) * 100) : 0
@@ -143,33 +116,32 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
                 <Link
                   key={roadmap.id}
                   href={`/learn/${roadmap.id}`}
-                  className="group bg-white border border-gray-100 hover:border-indigo-200 hover:shadow-md rounded-2xl p-5 transition-all"
+                  className="group flex items-center gap-4 p-4 bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={cn(
-                      'text-xs font-semibold px-2.5 py-1 rounded-full capitalize',
-                      roadmap.difficulty === 'beginner' && 'bg-green-50 text-green-600',
-                      roadmap.difficulty === 'intermediate' && 'bg-amber-50 text-amber-600',
-                      roadmap.difficulty === 'advanced' && 'bg-red-50 text-red-500',
-                    )}>
-                      {roadmap.difficulty}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-400 transition-colors" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-indigo-700 transition-colors">{roadmap.title}</h3>
-                  <p className="text-xs text-gray-400 mb-4 line-clamp-2">{roadmap.description}</p>
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-gray-400 mb-1.5">
-                      <span>{sections.length} sections</span>
-                      <span className="font-medium">{progress}%</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={cn(
+                        'text-[10px] font-bold uppercase tracking-wider',
+                        roadmap.difficulty === 'beginner' && 'text-emerald-400',
+                        roadmap.difficulty === 'intermediate' && 'text-amber-400',
+                        roadmap.difficulty === 'advanced' && 'text-red-400',
+                      )}>
+                        {roadmap.difficulty}
+                      </span>
+                      <span className="text-zinc-700 text-xs">·</span>
+                      <span className="text-zinc-600 text-[10px]">{sections.length} lessons</span>
                     </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-indigo-500 rounded-full transition-all"
-                        style={{ width: `${progress}%` }}
-                      />
+                    <h3 className="font-semibold text-white text-sm truncate group-hover:text-amber-400 transition-colors mb-2.5">
+                      {roadmap.title}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                      </div>
+                      <span className="text-[10px] text-zinc-600 tabular-nums w-6 text-right">{progress}%</span>
                     </div>
                   </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-700 group-hover:text-zinc-400 flex-shrink-0 transition-colors" />
                 </Link>
               )
             })}
@@ -177,15 +149,27 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
         )}
       </div>
 
+      {/* Explore */}
+      <div>
+        <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Explore Topics</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {TOPICS.map(topic => (
+            <button
+              key={topic}
+              onClick={() => { setSuggestedTopic(topic); setShowNewRoadmap(true) }}
+              className="text-left text-sm text-zinc-400 hover:text-white px-3.5 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl transition-all font-medium"
+            >
+              {topic}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {showNewRoadmap && (
         <NewRoadmapModal onClose={() => { setShowNewRoadmap(false); setSuggestedTopic(undefined) }} initialTopic={suggestedTopic} />
       )}
       {showWelcome && (
-        <WelcomeModal
-          name={profile?.display_name ?? ''}
-          onStart={startFromWelcome}
-          onDismiss={dismissWelcome}
-        />
+        <WelcomeModal name={profile?.display_name ?? ''} onStart={startFromWelcome} onDismiss={dismissWelcome} />
       )}
     </div>
   )

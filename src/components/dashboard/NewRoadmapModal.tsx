@@ -38,23 +38,23 @@ export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-amber-400 flex items-center justify-center">
+              <Zap className="w-3.5 h-3.5 text-zinc-950" />
             </div>
-            <h2 className="font-semibold text-lg">New Learning Roadmap</h2>
+            <h2 className="font-bold text-white">New Course</h2>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-300 transition-colors">
+          <button onClick={onClose} className="text-zinc-600 hover:text-zinc-400 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
               What do you want to learn?
             </label>
             <input
@@ -62,23 +62,25 @@ export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
               value={topic}
               onChange={e => setTopic(e.target.value)}
               placeholder="e.g. Machine Learning, TypeScript, Guitar..."
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-violet-500 transition-colors"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-amber-400/50 transition-colors"
               autoFocus
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Difficulty Level</label>
+            <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+              Difficulty
+            </label>
             <div className="grid grid-cols-3 gap-2">
               {(['beginner', 'intermediate', 'advanced'] as const).map(d => (
                 <button
                   key={d}
                   type="button"
                   onClick={() => setDifficulty(d)}
-                  className={`py-2 px-3 rounded-lg text-xs font-medium capitalize transition-all border ${
+                  className={`py-2 px-3 rounded-lg text-xs font-semibold capitalize transition-all border ${
                     difficulty === d
-                      ? 'border-violet-500 bg-violet-500/15 text-violet-300'
-                      : 'border-white/10 text-gray-400 hover:border-white/20'
+                      ? 'border-amber-400/50 bg-amber-400/10 text-amber-400'
+                      : 'border-zinc-700 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400'
                   }`}
                 >
                   {d}
@@ -96,12 +98,12 @@ export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
           <button
             type="submit"
             disabled={loading || !topic.trim()}
-            className="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-50 transition-colors py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
+            className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-zinc-950 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
           >
             {loading ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Generating with AI...</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
             ) : (
-              <><Zap className="w-4 h-4" /> Generate Roadmap</>
+              <><Zap className="w-4 h-4" /> Generate Course</>
             )}
           </button>
         </form>
