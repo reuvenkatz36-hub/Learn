@@ -16,23 +16,18 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-zinc-950 border-t border-zinc-800">
       <div className="flex items-stretch h-16 max-w-lg mx-auto">
         {nav.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href + '/'))
+          const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
           return (
             <Link
               key={href}
               href={href}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all"
+              className="flex-1 flex flex-col items-center justify-center gap-1 transition-all"
             >
-              <div className={cn(
-                'flex items-center justify-center w-10 h-7 rounded-2xl transition-all',
-                active ? 'bg-indigo-100' : ''
-              )}>
-                <Icon className={cn('w-5 h-5 transition-all', active ? 'text-indigo-600' : 'text-gray-400')} />
-              </div>
-              <span className={cn('text-[10px] font-medium transition-all', active ? 'text-indigo-600' : 'text-gray-400')}>
+              <Icon className={cn('w-5 h-5 transition-colors', active ? 'text-amber-400' : 'text-zinc-600')} />
+              <span className={cn('text-[10px] font-medium transition-colors', active ? 'text-amber-400' : 'text-zinc-600')}>
                 {label}
               </span>
             </Link>
