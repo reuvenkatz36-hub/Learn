@@ -19,8 +19,8 @@ interface Props {
 
 function masteryColor(level: number) {
   if (level >= 80) return '#10b981'
-  if (level >= 50) return '#f59e0b'
-  if (level >= 20) return '#8b5cf6'
+  if (level >= 50) return '#fbbf24'
+  if (level >= 20) return '#60a5fa'
   return '#374151'
 }
 
@@ -88,27 +88,29 @@ export default function KnowledgeGraphClient({ roadmaps }: Props) {
 
   if (roadmaps.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center py-20">
-        <GitBranch className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-        <h2 className="font-semibold text-lg mb-2">No knowledge graphs yet</h2>
-        <p className="text-gray-500 text-sm">Create a learning roadmap to auto-generate your knowledge graph</p>
+      <div className="flex flex-col items-center justify-center h-full text-center py-20 bg-zinc-950">
+        <GitBranch className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
+        <h2 className="font-bold text-white text-lg mb-2">No knowledge graphs yet</h2>
+        <p className="text-zinc-500 text-sm">Create a learning roadmap to auto-generate your knowledge graph</p>
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 flex-shrink-0">
+    <div className="h-screen flex flex-col bg-zinc-950">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 flex-shrink-0">
         <div>
-          <h1 className="font-semibold">Knowledge Graph</h1>
-          <p className="text-xs text-gray-500">Visualize your learning concepts</p>
+          <h1 className="font-bold text-white">Knowledge Graph</h1>
+          <p className="text-xs text-zinc-500">Visualize your learning concepts</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 text-xs text-gray-500">
+          {/* Legend */}
+          <div className="flex items-center gap-3 text-xs text-zinc-500">
             {[
               { color: '#374151', label: 'Not started' },
-              { color: '#8b5cf6', label: 'Learning' },
-              { color: '#f59e0b', label: 'Progressing' },
+              { color: '#60a5fa', label: 'Learning' },
+              { color: '#fbbf24', label: 'Progressing' },
               { color: '#10b981', label: 'Mastered' },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-1.5">
@@ -120,7 +122,7 @@ export default function KnowledgeGraphClient({ roadmaps }: Props) {
           <select
             value={selectedRoadmap}
             onChange={e => setSelectedRoadmap(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-violet-500"
+            className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-sm text-zinc-300 focus:outline-none focus:border-amber-400/50"
           >
             {roadmaps.map(r => (
               <option key={r.id} value={r.id}>{r.title}</option>
@@ -129,11 +131,12 @@ export default function KnowledgeGraphClient({ roadmaps }: Props) {
         </div>
       </div>
 
+      {/* Graph */}
       <div className="flex-1 relative">
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex items-center gap-3 text-gray-400">
-              <Loader2 className="w-5 h-5 animate-spin" />
+            <div className="flex items-center gap-3 text-zinc-400">
+              <Loader2 className="w-5 h-5 animate-spin text-amber-400" />
               Loading graph...
             </div>
           </div>
@@ -159,8 +162,8 @@ export default function KnowledgeGraphClient({ roadmaps }: Props) {
         {!loading && nodes.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <GitBranch className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm">No nodes found for this roadmap</p>
+              <GitBranch className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
+              <p className="text-zinc-500 text-sm">No nodes found for this roadmap</p>
             </div>
           </div>
         )}
