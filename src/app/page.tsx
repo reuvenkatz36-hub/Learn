@@ -1,92 +1,81 @@
 import Link from 'next/link'
-import { Brain, BookOpen, Trophy, MessageSquare, GitBranch, BarChart2, Zap, CheckCircle } from 'lucide-react'
+import { Brain, BookOpen, Trophy, MessageSquare, GitBranch, BarChart2, Zap, ArrowRight } from 'lucide-react'
 
 const features = [
-  { icon: Brain, title: 'AI Roadmaps', desc: 'Claude generates personalized learning paths for any topic' },
-  { icon: BookOpen, title: 'Streaming Lessons', desc: 'Rich 8-section lessons streamed in real-time by AI' },
-  { icon: Trophy, title: 'Quizzes & Assignments', desc: 'Test knowledge and get detailed AI feedback instantly' },
-  { icon: MessageSquare, title: 'AI Coach Chat', desc: 'Ask your personal AI tutor anything, anytime' },
-  { icon: GitBranch, title: 'Knowledge Graph', desc: 'Visualize concepts and track mastery across topics' },
-  { icon: BarChart2, title: 'Progress Dashboard', desc: 'Streak calendar, XP charts, and completion metrics' },
+  { icon: Brain, title: 'AI Roadmaps', desc: 'Personalized learning paths generated for any topic you choose.' },
+  { icon: BookOpen, title: 'Focus Reader', desc: 'Rich lessons in a distraction-free reader built for deep work.' },
+  { icon: Trophy, title: 'Quizzes & Practice', desc: 'Test your knowledge and get detailed feedback instantly.' },
+  { icon: MessageSquare, title: 'Personal Coach', desc: 'Ask your tutor anything, anytime, with full course context.' },
+  { icon: GitBranch, title: 'Knowledge Graph', desc: 'Visualize concepts and track mastery across every topic.' },
+  { icon: BarChart2, title: 'Progress Tracking', desc: 'Streaks, XP, and completion metrics to keep momentum.' },
 ]
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-zinc-950 text-white antialiased">
       {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-gray-950/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <nav className="fixed top-0 w-full z-50 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
+            <div className="w-7 h-7 rounded-lg bg-amber-400 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-zinc-950" />
             </div>
-            <span className="font-bold text-lg">MasteryAI</span>
+            <span className="font-bold tracking-tight">Mastery</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/auth/login" className="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2">
+          <div className="flex items-center gap-1">
+            <Link href="/auth/login" className="text-sm text-zinc-400 hover:text-white transition-colors px-4 py-2">
               Sign in
             </Link>
-            <Link href="/auth/signup" className="text-sm bg-violet-600 hover:bg-violet-500 transition-colors px-4 py-2 rounded-lg font-medium">
-              Get Started Free
+            <Link href="/auth/signup" className="text-sm bg-amber-400 hover:bg-amber-300 text-zinc-950 transition-colors px-4 py-2 rounded-lg font-bold">
+              Get started
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="pt-32 pb-20 px-6 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-violet-900/20 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 text-xs bg-violet-500/10 border border-violet-500/20 text-violet-300 px-3 py-1.5 rounded-full mb-6">
-            <Zap className="w-3 h-3" />
-            Powered by Claude AI
+      <section className="pt-40 pb-24 px-6 text-center">
+        <div className="max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 text-[11px] font-medium text-zinc-400 border border-zinc-800 bg-zinc-900/50 px-3 py-1 rounded-full mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            Your personal learning studio
           </div>
-          <h1 className="text-5xl sm:text-7xl font-bold mb-6 leading-tight">
-            Master Anything with{' '}
-            <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
-              AI-Powered
-            </span>{' '}
-            Learning
+          <h1 className="text-5xl sm:text-6xl font-bold mb-6 leading-[1.05] tracking-tight">
+            Master anything,
+            <br />
+            <span className="text-amber-400">one lesson at a time.</span>
           </h1>
-          <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Generate personalized roadmaps, stream rich lessons, ace quizzes, and chat with your AI coach &mdash; all in one place. Free, forever.
+          <p className="text-lg text-zinc-400 mb-10 max-w-xl mx-auto leading-relaxed">
+            Build a structured course on any subject, read it in a focus-first reader,
+            and prove what you know — all in one calm, deliberate place.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/signup" className="bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg shadow-violet-500/25">
-              Start Learning Free &rarr;
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/auth/signup" className="group inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 px-7 py-3.5 rounded-xl font-bold transition-colors">
+              Start learning free
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
-            <Link href="/auth/login" className="border border-white/10 hover:border-white/20 text-gray-300 px-8 py-4 rounded-xl font-semibold text-lg transition-all">
-              Sign In
+            <Link href="/auth/login" className="inline-flex items-center justify-center border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900 text-zinc-300 px-7 py-3.5 rounded-xl font-semibold transition-all">
+              Sign in
             </Link>
-          </div>
-          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-500">
-            {['No credit card required', 'All features free', 'Powered by Claude'].map(item => (
-              <div key={item} className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                {item}
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold mb-3">Everything you need to master any subject</h2>
-            <p className="text-gray-400">Six powerful AI tools working together for your learning journey</p>
+      <section className="py-20 px-6 border-t border-zinc-900">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-14 max-w-lg">
+            <h2 className="text-2xl font-bold mb-3 tracking-tight">Everything you need to learn deeply.</h2>
+            <p className="text-zinc-500">Six focused tools, designed to work together — nothing you don&apos;t need.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900 border border-zinc-900 rounded-2xl overflow-hidden">
             {features.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="group p-6 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-violet-500/30 hover:bg-white/[0.05] transition-all">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-violet-500/20 flex items-center justify-center mb-4 group-hover:border-violet-500/40 transition-all">
-                  <Icon className="w-5 h-5 text-violet-400" />
+              <div key={title} className="group p-7 bg-zinc-950 hover:bg-zinc-900/60 transition-colors">
+                <div className="w-9 h-9 rounded-lg bg-amber-400/10 border border-amber-400/20 flex items-center justify-center mb-5">
+                  <Icon className="w-4.5 h-4.5 text-amber-400" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">{title}</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">{desc}</p>
+                <h3 className="font-semibold mb-1.5">{title}</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -94,20 +83,19 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6">
+      <section className="py-24 px-6 border-t border-zinc-900">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="p-10 rounded-3xl bg-gradient-to-b from-violet-900/30 to-gray-900/50 border border-violet-500/20">
-            <h2 className="text-3xl font-bold mb-4">Ready to start mastering?</h2>
-            <p className="text-gray-400 mb-8">Join thousands of learners accelerating their growth with AI</p>
-            <Link href="/auth/signup" className="inline-block bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white px-10 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg shadow-violet-500/25">
-              Get Started &mdash; It&apos;s Free
-            </Link>
-          </div>
+          <h2 className="text-3xl font-bold mb-4 tracking-tight">Ready to start?</h2>
+          <p className="text-zinc-500 mb-8">Create your first course in under a minute. No card required.</p>
+          <Link href="/auth/signup" className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 px-8 py-3.5 rounded-xl font-bold transition-colors">
+            Get started — it&apos;s free
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </section>
 
-      <footer className="border-t border-white/5 py-8 px-6 text-center text-gray-600 text-sm">
-        &copy; 2026 MasteryAI &middot; Built with Claude AI
+      <footer className="border-t border-zinc-900 py-8 px-6 text-center text-zinc-600 text-sm">
+        © 2026 Mastery
       </footer>
     </div>
   )
