@@ -2,24 +2,24 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Profile, Roadmap, DailyActivity } from '@/types/database'
-import { Plus, BookOpen, Trophy, Flame, Target, ChevronRight, Brain, Compass } from 'lucide-react'
+import { Plus, BookOpen, Trophy, Flame, Target, ChevronRight, Brain, Compass, Cpu, TrendingUp, Code2, Palette, Globe, Camera, Activity, Layers, Music2, Calculator, DollarSign } from 'lucide-react'
 import NewRoadmapModal from '@/components/dashboard/NewRoadmapModal'
 import WelcomeModal from '@/components/dashboard/WelcomeModal'
 import { cn } from '@/lib/utils'
 
 const TOPIC_SUGGESTIONS = [
-  { emoji: '🤖', label: 'Machine Learning', category: 'Tech' },
-  { emoji: '💰', label: 'Personal Finance', category: 'Life' },
-  { emoji: '🐍', label: 'Python Programming', category: 'Tech' },
-  { emoji: '🎨', label: 'UI/UX Design', category: 'Creative' },
-  { emoji: '🧠', label: 'Psychology', category: 'Science' },
-  { emoji: '📈', label: 'Stock Market Investing', category: 'Finance' },
-  { emoji: '🌍', label: 'Spanish Language', category: 'Language' },
-  { emoji: '📸', label: 'Photography', category: 'Creative' },
-  { emoji: '🏋️', label: 'Fitness & Nutrition', category: 'Health' },
-  { emoji: '⚡', label: 'React & Next.js', category: 'Tech' },
-  { emoji: '🎸', label: 'Guitar', category: 'Music' },
-  { emoji: '🧮', label: 'Mathematics', category: 'Science' },
+  { icon: Cpu, label: 'Machine Learning', color: 'text-indigo-500', bg: 'bg-indigo-50' },
+  { icon: DollarSign, label: 'Personal Finance', color: 'text-green-500', bg: 'bg-green-50' },
+  { icon: Code2, label: 'Python Programming', color: 'text-indigo-500', bg: 'bg-indigo-50' },
+  { icon: Palette, label: 'UI/UX Design', color: 'text-violet-500', bg: 'bg-violet-50' },
+  { icon: Brain, label: 'Psychology', color: 'text-blue-500', bg: 'bg-blue-50' },
+  { icon: TrendingUp, label: 'Stock Market', color: 'text-emerald-500', bg: 'bg-emerald-50' },
+  { icon: Globe, label: 'Spanish Language', color: 'text-amber-500', bg: 'bg-amber-50' },
+  { icon: Camera, label: 'Photography', color: 'text-violet-500', bg: 'bg-violet-50' },
+  { icon: Activity, label: 'Fitness & Nutrition', color: 'text-rose-500', bg: 'bg-rose-50' },
+  { icon: Layers, label: 'React & Next.js', color: 'text-indigo-500', bg: 'bg-indigo-50' },
+  { icon: Music2, label: 'Guitar', color: 'text-purple-500', bg: 'bg-purple-50' },
+  { icon: Calculator, label: 'Mathematics', color: 'text-blue-500', bg: 'bg-blue-50' },
 ]
 
 interface Props {
@@ -62,11 +62,10 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back, {profile?.display_name ?? 'Learner'} 👋
+            Welcome back, {profile?.display_name ?? 'Learner'}
           </h1>
           <p className="text-gray-400 text-sm mt-1">Keep up the great work</p>
         </div>
@@ -79,7 +78,6 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
         </button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {stats.map(({ icon: Icon, label, value, sub, color, bg }) => (
           <div key={label} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
@@ -92,7 +90,6 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
         ))}
       </div>
 
-      {/* Discover Topics */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Compass className="w-4 h-4 text-indigo-500" />
@@ -100,20 +97,21 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
           <span className="text-xs text-gray-400 font-medium">— tap any topic to start learning</span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {TOPIC_SUGGESTIONS.map(({ emoji, label }) => (
+          {TOPIC_SUGGESTIONS.map(({ icon: Icon, label, color, bg }) => (
             <button
               key={label}
               onClick={() => { setSuggestedTopic(label); setShowNewRoadmap(true) }}
-              className="flex items-center gap-1.5 bg-white border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-sm font-medium px-3.5 py-2 rounded-full transition-all shadow-sm"
+              className="flex items-center gap-2 bg-white border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-sm font-medium px-3.5 py-2 rounded-full transition-all shadow-sm"
             >
-              <span>{emoji}</span>
+              <div className={cn('w-4 h-4 rounded flex items-center justify-center', bg)}>
+                <Icon className={cn('w-2.5 h-2.5', color)} />
+              </div>
               {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Courses */}
       <div>
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-bold text-gray-900 text-lg">Your Courses</h2>

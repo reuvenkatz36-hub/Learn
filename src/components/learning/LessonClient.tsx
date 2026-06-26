@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Lesson, Roadmap, Quiz, Assignment, LessonContentSection, QuizQuestion } from '@/types/database'
-import { X, PenLine, Loader2, Zap } from 'lucide-react'
+import { X, PenLine, Loader2, Zap, CheckCircle, BookOpen, Brain } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
 
@@ -170,7 +170,9 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
           ))}
         </div>
         <div style={{ height: '42vh' }} className="flex flex-col items-center justify-start pt-12 gap-4">
-          <div className="text-5xl">🎉</div>
+          <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center">
+            <CheckCircle className="w-7 h-7 text-indigo-500" />
+          </div>
           <p className="text-gray-400 text-sm">You read the whole lesson</p>
           <button
             onClick={() => {
@@ -179,7 +181,7 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
             }}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-semibold text-sm transition-colors"
           >
-            Complete lesson ✓
+            Complete lesson
           </button>
         </div>
       </div>
@@ -248,8 +250,10 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
   if (done) {
     return (
       <div className="flex flex-col items-center justify-center h-full py-20 gap-6 text-center px-6">
-        <div className="text-6xl">🎉</div>
-        <h2 className="text-3xl font-bold text-gray-900">Lesson complete!</h2>
+        <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center">
+          <CheckCircle className="w-8 h-8 text-indigo-500" />
+        </div>
+        <h2 className="text-3xl font-bold text-gray-900">Lesson complete</h2>
         <p className="text-gray-500">You earned <span className="font-bold text-indigo-600">+{xpEarned} XP</span></p>
         <button onClick={() => router.push(`/learn/${roadmapId}`)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-colors">
           Back to course
@@ -305,7 +309,9 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
 
   if (!quiz) return (
     <div className="text-center py-16">
-      <div className="text-5xl mb-4">🧠</div>
+      <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <Brain className="w-7 h-7 text-indigo-400" />
+      </div>
       <h3 className="font-bold text-gray-900 text-lg mb-1">Test yourself</h3>
       <p className="text-gray-400 text-sm mb-6">5 questions based on this lesson</p>
       <button onClick={generateQuiz} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2 mx-auto">
@@ -318,11 +324,12 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
 
   if (submitted && result) {
     const pct = Math.round((result.score / result.maxScore) * 100)
+    const label = pct >= 80 ? 'Excellent' : pct >= 60 ? 'Good job' : 'Keep going'
     return (
       <div>
         <div className={cn('p-6 rounded-2xl border mb-6 text-center', pct >= 80 ? 'bg-green-50 border-green-100' : pct >= 60 ? 'bg-amber-50 border-amber-100' : 'bg-red-50 border-red-100')}>
           <div className={cn('text-4xl font-bold mb-1', pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-amber-600' : 'text-red-500')}>{result.score}/{result.maxScore}</div>
-          <div className={cn('text-sm font-medium', pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-amber-600' : 'text-red-500')}>{pct}% — {pct >= 80 ? '🎉 Excellent!' : pct >= 60 ? '👍 Good job!' : '💪 Keep going!'}</div>
+          <div className={cn('text-sm font-medium', pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-amber-600' : 'text-red-500')}>{pct}% — {label}</div>
         </div>
         <div className="space-y-4">
           {questions.map((q, i) => {
@@ -404,7 +411,9 @@ function AssignmentSection({ lessonId, existingAssignment }: { lessonId: string;
 
   if (!assignment) return (
     <div className="text-center py-16">
-      <div className="text-5xl mb-4">✍️</div>
+      <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <PenLine className="w-7 h-7 text-indigo-400" />
+      </div>
       <h3 className="font-bold text-gray-900 text-lg mb-1">Practical assignment</h3>
       <p className="text-gray-400 text-sm mb-6">Apply what you&apos;ve learned with a real task</p>
       <button onClick={generateAssignment} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2 mx-auto">
@@ -449,9 +458,9 @@ export default function LessonClient({ lesson, roadmap, roadmapId, existingQuiz,
   const [activeTab, setActiveTab] = useState<'content' | 'quiz' | 'assignment'>('content')
 
   const tabs = [
-    { id: 'content', label: '📖 Lesson' },
-    { id: 'quiz', label: '🧠 Quiz' },
-    { id: 'assignment', label: '✍️ Practice' },
+    { id: 'content', icon: BookOpen, label: 'Lesson' },
+    { id: 'quiz', icon: Brain, label: 'Quiz' },
+    { id: 'assignment', icon: PenLine, label: 'Practice' },
   ] as const
 
   return (
@@ -466,8 +475,9 @@ export default function LessonClient({ lesson, roadmap, roadmapId, existingQuiz,
         </div>
       </div>
       <div className="flex border-b border-gray-100 shrink-0 px-2">
-        {tabs.map(({ id, label }) => (
-          <button key={id} onClick={() => setActiveTab(id)} className={cn('flex-1 py-3 text-xs font-semibold transition-all border-b-2 -mb-px', activeTab === id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-600')}>
+        {tabs.map(({ id, icon: Icon, label }) => (
+          <button key={id} onClick={() => setActiveTab(id)} className={cn('flex-1 py-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all border-b-2 -mb-px', activeTab === id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-600')}>
+            <Icon className="w-3.5 h-3.5" />
             {label}
           </button>
         ))}

@@ -35,7 +35,6 @@ export default function WelcomeModal({ name, onStart, onDismiss }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
-        {/* Header */}
         <div className="relative bg-gradient-to-br from-violet-600 to-indigo-600 px-6 pt-8 pb-6 text-white text-center">
           <button onClick={onDismiss} className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
             <X className="w-5 h-5" />
@@ -46,14 +45,12 @@ export default function WelcomeModal({ name, onStart, onDismiss }: Props) {
           <h2 className="text-xl font-bold">Welcome, {name || 'Learner'}!</h2>
           <p className="text-white/70 text-sm mt-1">Here&apos;s how MasteryAI works</p>
         </div>
-
-        {/* Steps */}
         <div className="px-6 py-5">
           <div className="space-y-4">
             {steps.map(({ icon: Icon, color, title, desc }, i) => (
               <div
                 key={i}
-                className={`flex gap-4 p-3 rounded-2xl transition-all cursor-pointer ${i === step ? 'bg-gray-50' : ''}`}
+                className={`flex gap-4 p-3 rounded-2xl transition-all ${i === step ? 'bg-gray-50' : ''}`}
                 onClick={() => setStep(i)}
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
@@ -66,8 +63,6 @@ export default function WelcomeModal({ name, onStart, onDismiss }: Props) {
               </div>
             ))}
           </div>
-
-          {/* Step dots */}
           <div className="flex justify-center gap-1.5 mt-5 mb-4">
             {steps.map((_, i) => (
               <button
@@ -77,7 +72,6 @@ export default function WelcomeModal({ name, onStart, onDismiss }: Props) {
               />
             ))}
           </div>
-
           <button
             onClick={onStart}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-2xl font-semibold text-sm transition-colors"
