@@ -19,18 +19,15 @@ interface Line {
   isTitle: boolean
 }
 
-// Split content into short Spotify-style lines
 function buildLines(sections: LessonContentSection[]): Line[] {
   const out: Line[] = []
   sections.forEach(s => {
     if (s.title) out.push({ text: s.title, isTitle: true })
-    // Split on sentence boundaries
     const sentences = (s.content ?? '')
       .split(/(?<=[.!?])\s+/)
       .flatMap(sent => {
         sent = sent.trim()
         if (!sent) return []
-        // If sentence is very long, break it at commas or after ~60 chars
         if (sent.length > 80) {
           const parts = sent.split(/,\s+/)
           if (parts.length > 1) return parts.map(p => p.trim()).filter(Boolean)
@@ -54,17 +51,13 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
   const rafRef = useRef<number | null>(null)
   const restored = useRef(false)
 
-  // Apply styles directly to DOM — no React re-render
-  // Use transform:scale (not font-size) so layout/shape never changes
   const applyStyles = useCallback((activeIdx: number) => {
     lineRefs.current.forEach((el, i) => {
       if (!el) return
       const dist = Math.abs(i - activeIdx)
       const isActive = dist === 0
-
       const scale = isActive ? 1.55 : dist === 1 ? 1.15 : dist === 2 ? 0.95 : 0.85
       const opacity = isActive ? 1 : dist === 1 ? 0.45 : dist === 2 ? 0.25 : 0.12
-
       el.style.transform = `scale(${scale})`
       el.style.opacity = String(opacity)
       el.style.color = isActive ? '#0f172a' : '#374151'
@@ -72,7 +65,6 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
     })
   }, [])
 
-  // Restore position
   useEffect(() => {
     if (restored.current || lines.length === 0) return
     restored.current = true
@@ -89,7 +81,6 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
     }
   }, [lines.length, lessonId, applyStyles])
 
-  // Initial style pass after mount
   useEffect(() => {
     applyStyles(0)
   }, [lines.length, applyStyles])
@@ -100,11 +91,9 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
       rafRef.current = null
       const container = scrollRef.current
       if (!container) return
-
       const containerMid = container.scrollTop + container.clientHeight / 2
       const total = container.scrollHeight - container.clientHeight
       setScrollPct(total > 0 ? Math.min(container.scrollTop / total, 1) : 0)
-
       let closestIdx = activeIdxRef.current
       let closestDist = Infinity
       lineRefs.current.forEach((el, i) => {
@@ -113,13 +102,10 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
         const dist = Math.abs(elMid - containerMid)
         if (dist < closestDist) { closestDist = dist; closestIdx = i }
       })
-
       if (closestIdx !== activeIdxRef.current) {
         activeIdxRef.current = closestIdx
         applyStyles(closestIdx)
       }
-
-      // XP every 8 lines
       const milestone = Math.floor(closestIdx / 8)
       if (milestone > lastXpMilestone.current) {
         lastXpMilestone.current = milestone
@@ -127,7 +113,6 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
         setXpPop(true)
         setTimeout(() => setXpPop(false), 700)
       }
-
       if (saveTimer.current) clearTimeout(saveTimer.current)
       saveTimer.current = setTimeout(() => {
         localStorage.setItem(`read_pos_${lessonId}`, String(closestIdx))
@@ -147,7 +132,6 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Progress + XP */}
       <div className="shrink-0 px-5 py-2 flex items-center gap-3 border-b border-gray-100">
         <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
           <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${scrollPct * 100}%`, transition: 'width 0.3s linear' }} />
@@ -162,11 +146,8 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
           )}
         </div>
       </div>
-
-      {/* Scroll area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div style={{ height: '42vh' }} />
-
         <div className="flex flex-col items-center px-8 gap-7" style={{ maxWidth: 520, margin: '0 auto' }}>
           {lines.map((line, i) => (
             <div
@@ -188,7 +169,6 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
             </div>
           ))}
         </div>
-
         <div style={{ height: '42vh' }} className="flex flex-col items-center justify-start pt-12 gap-4">
           <div className="text-5xl">🎉</div>
           <p className="text-gray-400 text-sm">You read the whole lesson</p>
@@ -270,7 +250,7 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
       <div className="flex flex-col items-center justify-center h-full py-20 gap-6 text-center px-6">
         <div className="text-6xl">🎉</div>
         <h2 className="text-3xl font-bold text-gray-900">Lesson complete!</h2>
-        <p className="text-gray-400">You earned <span className="font-bold text-indigo-600">{xpEarned} XP</span></p>
+        <p className="text-gray-500">You earned <span className="font-bold text-indigo-600">+{xpEarned} XP</span></p>
         <button onClick={() => router.push(`/learn/${roadmapId}`)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-colors">
           Back to course
         </button>
@@ -283,9 +263,15 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
     <SpotifyReader
       lines={lines}
       lessonId={lesson.id}
-      onFinish={() => {
-        setXpEarned(Math.max(10, Math.floor(lines.length / 8) * 10))
+      onFinish={async () => {
+        const earned = Math.max(10, Math.floor(lines.length / 8) * 10)
+        setXpEarned(earned)
         setDone(true)
+        fetch('/api/lesson/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessonId: lesson.id, xpEarned: earned }),
+        }).catch(() => {})
       }}
     />
   )
@@ -479,7 +465,6 @@ export default function LessonClient({ lesson, roadmap, roadmapId, existingQuiz,
           <p className="text-sm font-semibold text-gray-900 truncate">{lesson.title}</p>
         </div>
       </div>
-
       <div className="flex border-b border-gray-100 shrink-0 px-2">
         {tabs.map(({ id, label }) => (
           <button key={id} onClick={() => setActiveTab(id)} className={cn('flex-1 py-3 text-xs font-semibold transition-all border-b-2 -mb-px', activeTab === id ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-600')}>
@@ -487,7 +472,6 @@ export default function LessonClient({ lesson, roadmap, roadmapId, existingQuiz,
           </button>
         ))}
       </div>
-
       <div className="flex-1 overflow-hidden">
         {activeTab === 'content' && <LessonContent lesson={lesson} roadmapId={roadmapId} />}
         {activeTab === 'quiz' && <div className="h-full overflow-y-auto p-6"><QuizSection lessonId={lesson.id} existingQuiz={existingQuiz} /></div>}

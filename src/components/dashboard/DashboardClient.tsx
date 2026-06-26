@@ -1,9 +1,10 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Profile, Roadmap, DailyActivity } from '@/types/database'
 import { Plus, BookOpen, Trophy, Flame, Target, ChevronRight, Brain, Compass } from 'lucide-react'
 import NewRoadmapModal from '@/components/dashboard/NewRoadmapModal'
+import WelcomeModal from '@/components/dashboard/WelcomeModal'
 import { cn } from '@/lib/utils'
 
 const TOPIC_SUGGESTIONS = [
@@ -30,6 +31,24 @@ interface Props {
 export default function DashboardClient({ profile, roadmaps, activity }: Props) {
   const [showNewRoadmap, setShowNewRoadmap] = useState(false)
   const [suggestedTopic, setSuggestedTopic] = useState<string | undefined>()
+  const [showWelcome, setShowWelcome] = useState(false)
+
+  useEffect(() => {
+    if (!localStorage.getItem('mastery_welcomed')) {
+      setShowWelcome(true)
+    }
+  }, [])
+
+  const dismissWelcome = () => {
+    localStorage.setItem('mastery_welcomed', '1')
+    setShowWelcome(false)
+  }
+
+  const startFromWelcome = () => {
+    localStorage.setItem('mastery_welcomed', '1')
+    setShowWelcome(false)
+    setShowNewRoadmap(true)
+  }
 
   const totalLessons = activity.reduce((s, a) => s + a.lessons_completed, 0)
   const totalQuizzes = activity.reduce((s, a) => s + a.quizzes_taken, 0)
@@ -42,7 +61,7 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
   ]
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -162,6 +181,13 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
 
       {showNewRoadmap && (
         <NewRoadmapModal onClose={() => { setShowNewRoadmap(false); setSuggestedTopic(undefined) }} initialTopic={suggestedTopic} />
+      )}
+      {showWelcome && (
+        <WelcomeModal
+          name={profile?.display_name ?? ''}
+          onStart={startFromWelcome}
+          onDismiss={dismissWelcome}
+        />
       )}
     </div>
   )
