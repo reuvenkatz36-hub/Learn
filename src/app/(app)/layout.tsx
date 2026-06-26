@@ -1,6 +1,6 @@
 import { createServerClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
-import Sidebar from '@/components/Sidebar'
+import BottomNav from '@/components/BottomNav'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createServerClient()
@@ -8,18 +8,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar profile={profile} />
-      <main className="flex-1 overflow-y-auto">
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <main className="flex-1 pb-20">
         {children}
       </main>
+      <BottomNav />
     </div>
   )
 }

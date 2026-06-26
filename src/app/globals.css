@@ -22,6 +22,16 @@ body {
   }
 }
 
+@keyframes xp-pop {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  60% { opacity: 1; transform: translateY(-24px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-40px) scale(0.9); }
+}
+
+.animate-xp-pop {
+  animation: xp-pop 0.8s ease-out forwards;
+}
+
 .react-flow__node {
   border-radius: 8px;
 }
