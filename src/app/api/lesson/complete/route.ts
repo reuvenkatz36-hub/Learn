@@ -48,8 +48,7 @@ export async function POST(req: Request) {
   if (profile) {
     const lastActive = profile.last_active_date
     const isNewDay = lastActive !== today
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-    const isConsecutive = lastActive === yesterday
+    const isConsecutive = lastActive === new Date(Date.now() - 86400000).toISOString().split('T')[0]
     const newStreak = isNewDay ? (isConsecutive ? (profile.streak_count ?? 0) + 1 : 1) : (profile.streak_count ?? 0)
 
     await supabase
