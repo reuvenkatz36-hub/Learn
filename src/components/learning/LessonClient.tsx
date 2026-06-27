@@ -2,9 +2,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Lesson, Roadmap, Quiz, Assignment, LessonContentSection, QuizQuestion } from '@/types/database'
-import { X, PenLine, Loader2, Zap, CheckCircle, BookOpen, Brain } from 'lucide-react'
+import { X, Loader2, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
+import Mascot from '@/components/crew/Mascot'
+import { CREW, type CrewId } from '@/lib/crew'
+
+const owl = CREW.owl
+const cat = CREW.cat
+const beaver = CREW.beaver
 
 interface Props {
   lesson: Lesson
@@ -60,7 +66,7 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
       const opacity = isActive ? 1 : dist === 1 ? 0.45 : dist === 2 ? 0.25 : 0.12
       el.style.transform = `scale(${scale})`
       el.style.opacity = String(opacity)
-      el.style.color = isActive ? '#0f172a' : '#374151'
+      el.style.color = isActive ? '#1C1B1A' : '#6B6864'
       el.style.fontWeight = isActive ? (el.dataset.title === 'true' ? '800' : '600') : '400'
     })
   }, [])
@@ -129,17 +135,17 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
   }, [onScroll])
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-surface">
       {/* Progress + XP */}
-      <div className="shrink-0 px-5 py-2 flex items-center gap-3 border-b border-gray-100">
-        <div className="flex-1 h-0.5 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-amber-400 rounded-full" style={{ width: `${scrollPct * 100}%`, transition: 'width 0.3s linear' }} />
+      <div className="shrink-0 px-5 py-2 flex items-center gap-3 border-b border-line">
+        <div className="flex-1 h-1 bg-line rounded-full overflow-hidden">
+          <div className="h-full rounded-full" style={{ width: `${scrollPct * 100}%`, background: owl.accent, transition: 'width 0.3s linear' }} />
         </div>
         <div className="relative flex items-center gap-1 shrink-0">
-          <Zap className="w-3.5 h-3.5 text-amber-500" />
-          <span className="text-sm font-bold text-amber-600 tabular-nums">{xp} XP</span>
+          <Zap className="w-3.5 h-3.5" style={{ color: owl.accent }} />
+          <span className="text-sm font-bold tabular-nums" style={{ color: owl.accent }}>{xp} XP</span>
           {xpPop && (
-            <span className="pointer-events-none absolute -top-7 right-0 text-amber-500 font-bold text-xs whitespace-nowrap animate-xp-pop">
+            <span className="pointer-events-none absolute -top-7 right-0 font-bold text-xs whitespace-nowrap animate-xp-pop" style={{ color: owl.accent }}>
               +10 XP
             </span>
           )}
@@ -161,7 +167,7 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
                 fontSize: '20px',
                 lineHeight: 1.4,
                 opacity: 0.12,
-                color: '#374151',
+                color: '#6B6864',
                 transformOrigin: 'center center',
                 transition: 'transform 0.22s ease, opacity 0.22s ease, color 0.18s ease, font-weight 0.18s ease',
               }}
@@ -171,16 +177,15 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
           ))}
         </div>
         <div style={{ height: '42vh' }} className="flex flex-col items-center justify-start pt-12 gap-4">
-          <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center">
-            <CheckCircle className="w-7 h-7 text-amber-500" />
-          </div>
-          <p className="text-gray-400 text-sm">You read the whole lesson</p>
+          <Mascot who="owl" size={64} />
+          <p className="text-ink-soft text-sm">You read the whole lesson</p>
           <button
             onClick={() => {
               localStorage.removeItem(`read_pos_${lessonId}`)
               onFinish()
             }}
-            className="bg-amber-400 hover:bg-amber-300 text-zinc-950 px-8 py-3 rounded-xl font-bold text-sm transition-colors"
+            className="text-white px-8 py-3 rounded-xl font-bold text-sm transition-transform hover:-translate-y-0.5"
+            style={{ background: owl.accent }}
           >
             Complete lesson
           </button>
@@ -236,12 +241,12 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
 
   if (streaming && sections.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 gap-4 bg-white">
-        <Loader2 className="w-7 h-7 animate-spin text-amber-400" />
-        <p className="text-gray-400 text-sm font-medium">Crafting your lesson...</p>
+      <div className="flex flex-col items-center justify-center h-96 gap-4 bg-surface">
+        <Mascot who="owl" size={72} />
+        <p className="text-ink-soft text-sm font-medium">{owl.name} is writing your lesson...</p>
         <div className="flex gap-1.5">
           {[0, 1, 2].map(i => (
-            <div key={i} className="w-1.5 h-1.5 bg-amber-200 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+            <div key={i} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: owl.accent, animationDelay: `${i * 0.15}s` }} />
           ))}
         </div>
       </div>
@@ -250,13 +255,11 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
 
   if (done) {
     return (
-      <div className="flex flex-col items-center justify-center h-full py-20 gap-6 text-center px-6 bg-white">
-        <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center">
-          <CheckCircle className="w-8 h-8 text-amber-500" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900">Lesson complete</h2>
-        <p className="text-gray-400">You earned <span className="font-bold text-amber-500">+{xpEarned} XP</span></p>
-        <button onClick={() => router.push(`/learn/${roadmapId}`)} className="bg-amber-400 hover:bg-amber-300 text-zinc-950 px-6 py-3 rounded-xl font-bold text-sm transition-colors">
+      <div className="flex flex-col items-center justify-center h-full py-20 gap-5 text-center px-6 bg-surface">
+        <Mascot who="owl" size={88} halo />
+        <h2 className="text-2xl font-bold text-ink">Lesson complete</h2>
+        <p className="text-ink-soft">You earned <span className="font-bold" style={{ color: owl.accent }}>+{xpEarned} XP</span></p>
+        <button onClick={() => router.push(`/learn/${roadmapId}`)} className="text-white px-6 py-3 rounded-xl font-bold text-sm transition-transform hover:-translate-y-0.5" style={{ background: owl.accent }}>
           Back to course
         </button>
       </div>
@@ -310,12 +313,10 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
 
   if (!quiz) return (
     <div className="text-center py-16">
-      <div className="w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <Brain className="w-7 h-7 text-zinc-500" />
-      </div>
-      <h3 className="font-bold text-white text-lg mb-1">Test yourself</h3>
-      <p className="text-zinc-500 text-sm mb-6">5 questions based on this lesson</p>
-      <button onClick={generateQuiz} disabled={loading} className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-zinc-950 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mx-auto">
+      <Mascot who="cat" size={80} className="mx-auto mb-4" />
+      <h3 className="font-bold text-ink text-lg mb-1">{cat.name} wants to test you</h3>
+      <p className="text-ink-soft text-sm mb-6">5 questions based on this lesson</p>
+      <button onClick={generateQuiz} disabled={loading} className="text-white px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mx-auto disabled:opacity-50 transition-transform hover:enabled:-translate-y-0.5" style={{ background: cat.accent }}>
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} Generate Quiz
       </button>
     </div>
@@ -326,28 +327,30 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
   if (submitted && result) {
     const pct = Math.round((result.score / result.maxScore) * 100)
     const label = pct >= 80 ? 'Excellent' : pct >= 60 ? 'Good job' : 'Keep going'
+    const tone = pct >= 80 ? '#22B07D' : pct >= 60 ? cat.accent : '#E11D48'
     return (
       <div>
-        <div className={cn('p-6 rounded-xl border mb-6 text-center', pct >= 80 ? 'bg-emerald-500/10 border-emerald-500/20' : pct >= 60 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-red-500/10 border-red-500/20')}>
-          <div className={cn('text-4xl font-bold mb-1', pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400')}>{result.score}/{result.maxScore}</div>
-          <div className={cn('text-sm font-medium', pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400')}>{pct}% — {label}</div>
+        <div className="p-6 rounded-2xl border mb-6 text-center" style={{ background: `${tone}14`, borderColor: `${tone}33` }}>
+          <Mascot who="cat" size={56} className="mx-auto mb-2" animate={pct >= 80} />
+          <div className="text-4xl font-bold mb-1" style={{ color: tone }}>{result.score}/{result.maxScore}</div>
+          <div className="text-sm font-medium" style={{ color: tone }}>{pct}% — {label}</div>
         </div>
         <div className="space-y-3">
           {questions.map((q, i) => {
             const correct = answers[q.id] === q.correctIndex
             return (
-              <div key={q.id} className={cn('p-4 rounded-xl border', correct ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-red-500/20 bg-red-500/5')}>
-                <p className="font-medium text-sm text-white mb-3">{i + 1}. {q.question}</p>
+              <div key={q.id} className="p-4 rounded-2xl border bg-surface" style={{ borderColor: correct ? 'rgba(34,176,125,0.3)' : 'rgba(225,29,72,0.25)' }}>
+                <p className="font-medium text-sm text-ink mb-3">{i + 1}. {q.question}</p>
                 <div className="space-y-1.5">
                   {q.options.map((opt, oi) => (
                     <div key={oi} className={cn('text-xs px-3 py-2 rounded-lg',
-                      oi === q.correctIndex && 'bg-emerald-500/20 text-emerald-400 font-medium',
-                      oi === answers[q.id] && oi !== q.correctIndex && 'bg-red-500/20 text-red-400',
-                      oi !== q.correctIndex && oi !== answers[q.id] && 'text-zinc-600',
+                      oi === q.correctIndex && 'bg-emerald-50 text-emerald-700 font-medium',
+                      oi === answers[q.id] && oi !== q.correctIndex && 'bg-rose-50 text-rose-700',
+                      oi !== q.correctIndex && oi !== answers[q.id] && 'text-ink-faint',
                     )}>{opt}</div>
                   ))}
                 </div>
-                <p className="text-xs text-zinc-600 mt-3 italic">{q.explanation}</p>
+                <p className="text-xs text-ink-soft mt-3 italic">{q.explanation}</p>
               </div>
             )
           })}
@@ -359,22 +362,24 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
   return (
     <div className="space-y-4">
       {questions.map((q, i) => (
-        <div key={q.id} className="p-4 bg-zinc-800/50 border border-zinc-700 rounded-xl">
-          <p className="font-semibold text-sm text-white mb-3">{i + 1}. {q.question}</p>
+        <div key={q.id} className="p-4 bg-surface border border-line rounded-2xl">
+          <p className="font-semibold text-sm text-ink mb-3">{i + 1}. {q.question}</p>
           <div className="space-y-2">
-            {q.options.map((opt, oi) => (
-              <button key={oi} onClick={() => setAnswers(prev => ({ ...prev, [q.id]: oi }))}
-                className={cn('w-full text-left text-sm px-4 py-3 rounded-xl border transition-all',
-                  answers[q.id] === oi
-                    ? 'border-amber-400/50 bg-amber-400/10 text-amber-400 font-medium'
-                    : 'border-zinc-700 bg-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
-                )}>{opt}</button>
-            ))}
+            {q.options.map((opt, oi) => {
+              const selected = answers[q.id] === oi
+              return (
+                <button key={oi} onClick={() => setAnswers(prev => ({ ...prev, [q.id]: oi }))}
+                  className="w-full text-left text-sm px-4 py-3 rounded-xl border transition-all"
+                  style={selected
+                    ? { borderColor: cat.accent, background: cat.accentSoft, color: cat.accent, fontWeight: 500 }
+                    : { borderColor: '#ECEAE4', color: '#6B6864' }}>{opt}</button>
+              )
+            })}
           </div>
         </div>
       ))}
       <button onClick={submitQuiz} disabled={loading || Object.keys(answers).length < questions.length}
-        className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-zinc-950 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+        className="w-full text-white py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-40 transition-transform hover:enabled:-translate-y-0.5" style={{ background: cat.accent }}>
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Submit Quiz
       </button>
     </div>
@@ -426,49 +431,52 @@ function AssignmentSection({ lessonId, existingAssignment }: { lessonId: string;
 
   if (!assignment) return (
     <div className="text-center py-16">
-      <div className="w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <PenLine className="w-7 h-7 text-zinc-500" />
-      </div>
-      <h3 className="font-bold text-white text-lg mb-1">Practical assignment</h3>
-      <p className="text-zinc-500 text-sm mb-6">Apply what you&apos;ve learned with a real task</p>
-      <button onClick={generateAssignment} disabled={loading} className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-zinc-950 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mx-auto">
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PenLine className="w-4 h-4" />} Get Assignment
+      <Mascot who="beaver" size={80} className="mx-auto mb-4" />
+      <h3 className="font-bold text-ink text-lg mb-1">{beaver.name} has a build for you</h3>
+      <p className="text-ink-soft text-sm mb-6">Apply what you&apos;ve learned with a real task</p>
+      <button onClick={generateAssignment} disabled={loading} className="text-white px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mx-auto disabled:opacity-50 transition-transform hover:enabled:-translate-y-0.5" style={{ background: beaver.accent }}>
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} Get Assignment
       </button>
     </div>
   )
 
   return (
     <div className="space-y-4">
-      <div className="p-4 bg-amber-400/10 border border-amber-400/20 rounded-xl">
-        <h3 className="font-semibold text-xs text-amber-400 uppercase tracking-wider mb-2">Your Task</h3>
-        <p className="text-sm text-zinc-300 leading-relaxed">{assignment.prompt}</p>
+      <div className="p-4 rounded-2xl border" style={{ background: beaver.accentSoft, borderColor: `${beaver.accent}33` }}>
+        <h3 className="font-semibold text-xs uppercase tracking-wider mb-2" style={{ color: beaver.accent }}>Your Task</h3>
+        <p className="text-sm text-ink leading-relaxed">{assignment.prompt}</p>
       </div>
       {!assignment.submission && (
         <div>
           <textarea value={submission} onChange={e => setSubmission(e.target.value)} rows={8}
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400/50 resize-none placeholder-zinc-600"
+            className="w-full bg-surface border border-line rounded-2xl px-4 py-3 text-sm text-ink focus:outline-none focus:ring-2 resize-none placeholder-ink-faint"
+            style={{ ['--tw-ring-color' as string]: beaver.accent }}
             placeholder="Write your response here..." />
           <button onClick={submitAssignment} disabled={streaming || !submission.trim()}
-            className="mt-3 w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-zinc-950 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+            className="mt-3 w-full text-white py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-40 transition-transform hover:enabled:-translate-y-0.5" style={{ background: beaver.accent }}>
             {streaming ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {streaming ? 'Getting feedback...' : 'Submit for AI Feedback'}
+            {streaming ? 'Getting feedback...' : 'Submit for Feedback'}
           </button>
         </div>
       )}
       {(feedback || assignment.ai_feedback) && (
-        <div className="p-4 bg-zinc-800 border border-zinc-700 rounded-xl">
+        <div className="p-4 bg-surface border border-line rounded-2xl">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-xs text-zinc-400 uppercase tracking-wider">AI Feedback</h3>
+            <div className="flex items-center gap-2">
+              <Mascot who="beaver" size={28} animate={false} />
+              <h3 className="font-semibold text-xs text-ink-soft uppercase tracking-wider">{beaver.name}&apos;s Feedback</h3>
+            </div>
             {score !== null && (
-              <span className={cn('text-sm font-bold px-3 py-1 rounded-lg',
-                score >= 80 ? 'bg-emerald-500/10 text-emerald-400' : score >= 60 ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'
-              )}>{score}/100</span>
+              <span className="text-sm font-bold px-3 py-1 rounded-lg" style={{
+                background: score >= 80 ? 'rgba(34,176,125,0.12)' : score >= 60 ? beaver.accentSoft : 'rgba(225,29,72,0.1)',
+                color: score >= 80 ? '#22B07D' : score >= 60 ? beaver.accent : '#E11D48',
+              }}>{score}/100</span>
             )}
           </div>
-          <div className="prose prose-sm prose-invert max-w-none text-zinc-400">
+          <div className="prose prose-sm max-w-none text-ink-soft">
             <ReactMarkdown>{feedback || assignment.ai_feedback || ''}</ReactMarkdown>
           </div>
-          {streaming && <span className="animate-pulse text-amber-400 text-lg">▊</span>}
+          {streaming && <span className="animate-pulse text-lg" style={{ color: beaver.accent }}>▊</span>}
         </div>
       )}
     </div>
@@ -479,42 +487,47 @@ export default function LessonClient({ lesson, roadmap, roadmapId, existingQuiz,
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'content' | 'quiz' | 'assignment'>('content')
 
-  const tabs = [
-    { id: 'content', icon: BookOpen, label: 'Lesson' },
-    { id: 'quiz', icon: Brain, label: 'Quiz' },
-    { id: 'assignment', icon: PenLine, label: 'Practice' },
-  ] as const
+  const tabs: { id: 'content' | 'quiz' | 'assignment'; who: CrewId; label: string }[] = [
+    { id: 'content', who: 'owl', label: 'Lesson' },
+    { id: 'quiz', who: 'cat', label: 'Quiz' },
+    { id: 'assignment', who: 'beaver', label: 'Practice' },
+  ]
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col">
+    <div className="fixed inset-0 z-50 bg-surface flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-800 shrink-0">
-        <button onClick={() => router.back()} className="w-9 h-9 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 flex items-center justify-center transition-colors flex-shrink-0">
-          <X className="w-4 h-4 text-zinc-400" />
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-line shrink-0">
+        <button onClick={() => router.back()} className="w-9 h-9 rounded-xl bg-paper hover:bg-line flex items-center justify-center transition-colors flex-shrink-0">
+          <X className="w-4 h-4 text-ink-soft" />
         </button>
         <div className="flex-1 min-w-0">
-          {roadmap && <p className="text-[10px] text-zinc-600 font-semibold uppercase tracking-wide truncate">{roadmap.title}</p>}
-          <p className="text-sm font-semibold text-white truncate">{lesson.title}</p>
+          {roadmap && <p className="text-[10px] text-ink-faint font-semibold uppercase tracking-wide truncate">{roadmap.title}</p>}
+          <p className="text-sm font-semibold text-ink truncate">{lesson.title}</p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-zinc-800 shrink-0">
-        {tabs.map(({ id, icon: Icon, label }) => (
-          <button key={id} onClick={() => setActiveTab(id)}
-            className={cn('flex-1 py-3 flex items-center justify-center gap-1.5 text-xs font-semibold transition-all border-b-2 -mb-px',
-              activeTab === id ? 'border-amber-400 text-amber-400' : 'border-transparent text-zinc-600 hover:text-zinc-400'
-            )}>
-            <Icon className="w-3.5 h-3.5" />
-            {label}
-          </button>
-        ))}
+      {/* Tabs — each owned by a crew member */}
+      <div className="flex border-b border-line shrink-0">
+        {tabs.map(({ id, who, label }) => {
+          const active = activeTab === id
+          const accent = CREW[who].accent
+          return (
+            <button key={id} onClick={() => setActiveTab(id)}
+              className="flex-1 py-2.5 flex items-center justify-center gap-2 text-xs font-semibold transition-all border-b-2 -mb-px"
+              style={{ borderColor: active ? accent : 'transparent', color: active ? accent : '#9C9892' }}>
+              <span className={cn(active ? 'opacity-100' : 'opacity-50 grayscale')} style={{ transition: 'all 0.2s' }}>
+                <Mascot who={who} size={24} animate={false} />
+              </span>
+              {label}
+            </button>
+          )
+        })}
       </div>
 
       <div className="flex-1 overflow-hidden">
         {activeTab === 'content' && <LessonContent lesson={lesson} roadmapId={roadmapId} />}
-        {activeTab === 'quiz' && <div className="h-full overflow-y-auto p-6 bg-zinc-950"><QuizSection lessonId={lesson.id} existingQuiz={existingQuiz} /></div>}
-        {activeTab === 'assignment' && <div className="h-full overflow-y-auto p-6 bg-zinc-950"><AssignmentSection lessonId={lesson.id} existingAssignment={existingAssignment} /></div>}
+        {activeTab === 'quiz' && <div className="h-full overflow-y-auto p-6 bg-paper"><QuizSection lessonId={lesson.id} existingQuiz={existingQuiz} /></div>}
+        {activeTab === 'assignment' && <div className="h-full overflow-y-auto p-6 bg-paper"><AssignmentSection lessonId={lesson.id} existingAssignment={existingAssignment} /></div>}
       </div>
     </div>
   )

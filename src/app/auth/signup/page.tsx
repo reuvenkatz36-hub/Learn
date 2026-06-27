@@ -3,7 +3,11 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Zap, Loader2, CheckCircle } from 'lucide-react'
+import { Loader2, CheckCircle } from 'lucide-react'
+import Mascot from '@/components/crew/Mascot'
+import { CREW } from '@/lib/crew'
+
+const fox = CREW.fox
 
 export default function SignupPage() {
   const router = useRouter()
@@ -34,68 +38,69 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-paper flex items-center justify-center">
         <div className="text-center">
-          <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-white">Account created</h2>
-          <p className="text-zinc-500 mt-2 text-sm">Redirecting to dashboard...</p>
+          <Mascot who="fox" size={88} halo className="mx-auto mb-4" />
+          <div className="flex items-center justify-center gap-2 text-emerald-600">
+            <CheckCircle className="w-5 h-5" />
+            <h2 className="text-xl font-bold text-ink">Account created</h2>
+          </div>
+          <p className="text-ink-soft mt-2 text-sm">{fox.name} is taking you in...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-paper text-ink flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-amber-400 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-zinc-950" />
-            </div>
-            <span className="font-bold text-lg text-white">MasteryAI</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-white">Start learning for free</h1>
-          <p className="text-zinc-500 mt-1 text-sm">No credit card required</p>
+          <Mascot who="fox" size={88} halo className="mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-ink">Join the crew</h1>
+          <p className="text-ink-soft mt-1 text-sm">{fox.name} and the team are ready to teach you</p>
         </div>
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1.5">Name</label>
+            <label className="block text-sm font-medium text-ink-soft mb-1.5">Name</label>
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
               required
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-amber-400/50 transition-colors"
+              className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 transition-all"
+              style={{ ['--tw-ring-color' as string]: fox.accent }}
               placeholder="Your name"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-ink-soft mb-1.5">Email</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-amber-400/50 transition-colors"
+              className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 transition-all"
+              style={{ ['--tw-ring-color' as string]: fox.accent }}
               placeholder="you@example.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1.5">Password</label>
+            <label className="block text-sm font-medium text-ink-soft mb-1.5">Password</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-amber-400/50 transition-colors"
+              className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 transition-all"
+              style={{ ['--tw-ring-color' as string]: fox.accent }}
               placeholder="At least 6 characters"
             />
           </div>
 
           {error && (
-            <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+            <div className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
               {error}
             </div>
           )}
@@ -103,15 +108,16 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-amber-400 hover:bg-amber-300 text-zinc-950 disabled:opacity-50 transition-colors py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2"
+            className="w-full text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-transform hover:enabled:-translate-y-0.5"
+            style={{ background: fox.accent }}
           >
             {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating account...</> : 'Create Free Account'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-zinc-600 mt-6">
+        <p className="text-center text-sm text-ink-faint mt-6">
           Already have an account?{' '}
-          <Link href="/auth/login" className="text-amber-400 hover:text-amber-300 transition-colors font-medium">
+          <Link href="/auth/login" className="font-medium transition-colors" style={{ color: fox.accent }}>
             Sign in
           </Link>
         </p>

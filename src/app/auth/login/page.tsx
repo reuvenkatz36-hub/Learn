@@ -3,7 +3,11 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Zap, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import Mascot from '@/components/crew/Mascot'
+import { CREW } from '@/lib/crew'
+
+const fox = CREW.fox
 
 export default function LoginPage() {
   const router = useRouter()
@@ -27,45 +31,42 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-paper text-ink flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-amber-400 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-zinc-950" />
-            </div>
-            <span className="font-bold text-lg text-white">MasteryAI</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-          <p className="text-zinc-500 mt-1 text-sm">Sign in to continue learning</p>
+          <Mascot who="fox" size={88} halo className="mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-ink">Welcome back</h1>
+          <p className="text-ink-soft mt-1 text-sm">{fox.name} missed you — let&apos;s keep learning</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-ink-soft mb-1.5">Email</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-amber-400/50 transition-colors"
+              className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 transition-all"
+              style={{ ['--tw-ring-color' as string]: fox.accent }}
               placeholder="you@example.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1.5">Password</label>
+            <label className="block text-sm font-medium text-ink-soft mb-1.5">Password</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-amber-400/50 transition-colors"
+              className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 transition-all"
+              style={{ ['--tw-ring-color' as string]: fox.accent }}
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+            <div className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
               {error}
             </div>
           )}
@@ -73,15 +74,16 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-50 transition-colors text-zinc-950 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+            className="w-full text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-transform hover:enabled:-translate-y-0.5"
+            style={{ background: fox.accent }}
           >
             {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</> : 'Sign In'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-zinc-600 mt-6">
+        <p className="text-center text-sm text-ink-faint mt-6">
           Don&apos;t have an account?{' '}
-          <Link href="/auth/signup" className="text-amber-400 hover:text-amber-300 transition-colors font-medium">
+          <Link href="/auth/signup" className="font-medium transition-colors" style={{ color: fox.accent }}>
             Sign up free
           </Link>
         </p>

@@ -11,17 +11,21 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { KnowledgeNode, KnowledgeEdge } from '@/types/database'
-import { GitBranch, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import Mascot from '@/components/crew/Mascot'
+import { CREW } from '@/lib/crew'
+
+const elephant = CREW.elephant
 
 interface Props {
   roadmaps: { id: string; title: string }[]
 }
 
 function masteryColor(level: number) {
-  if (level >= 80) return '#10b981'
-  if (level >= 50) return '#fbbf24'
-  if (level >= 20) return '#60a5fa'
-  return '#374151'
+  if (level >= 80) return '#22B07D'
+  if (level >= 50) return '#F5A524'
+  if (level >= 20) return '#3BA9E0'
+  return '#C9C5BD'
 }
 
 function toFlowNodes(nodes: KnowledgeNode[]): Node[] {
@@ -32,14 +36,15 @@ function toFlowNodes(nodes: KnowledgeNode[]): Node[] {
       position: { x: pos.x, y: pos.y },
       data: { label: n.label, mastery: n.mastery_level, type: n.node_type },
       style: {
-        background: '#111827',
+        background: '#FFFFFF',
         border: `2px solid ${masteryColor(n.mastery_level)}`,
         borderRadius: n.node_type === 'topic' ? '12px' : n.node_type === 'concept' ? '8px' : '6px',
-        color: '#f9fafb',
+        color: '#1C1B1A',
         fontSize: n.node_type === 'topic' ? '14px' : n.node_type === 'concept' ? '12px' : '11px',
         fontWeight: n.node_type === 'topic' ? 700 : n.node_type === 'concept' ? 600 : 400,
         padding: n.node_type === 'topic' ? '10px 16px' : '6px 12px',
         minWidth: n.node_type === 'topic' ? 120 : 80,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
       },
     }
   })
@@ -50,7 +55,7 @@ function toFlowEdges(edges: KnowledgeEdge[]): Edge[] {
     id: e.id,
     source: e.source_id,
     target: e.target_id,
-    style: { stroke: '#374151', strokeWidth: 1.5 },
+    style: { stroke: '#D6D3CC', strokeWidth: 1.5 },
     animated: false,
   }))
 }
@@ -88,30 +93,33 @@ export default function KnowledgeGraphClient({ roadmaps }: Props) {
 
   if (roadmaps.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center py-20 bg-zinc-950">
-        <GitBranch className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-        <h2 className="font-bold text-white text-lg mb-2">No knowledge graphs yet</h2>
-        <p className="text-zinc-500 text-sm">Create a learning roadmap to auto-generate your knowledge graph</p>
+      <div className="flex flex-col items-center justify-center h-full text-center py-20 bg-paper">
+        <Mascot who="elephant" size={80} className="mb-4" />
+        <h2 className="font-bold text-ink text-lg mb-2">No knowledge graphs yet</h2>
+        <p className="text-ink-soft text-sm">Create a learning roadmap and {elephant.name} will map it out</p>
       </div>
     )
   }
 
   return (
-    <div className="h-screen flex flex-col bg-zinc-950">
+    <div className="h-screen flex flex-col bg-paper">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 flex-shrink-0">
-        <div>
-          <h1 className="font-bold text-white">Knowledge Graph</h1>
-          <p className="text-xs text-zinc-500">Visualize your learning concepts</p>
+      <div className="flex items-center justify-between px-5 py-3 border-b border-line flex-shrink-0 bg-surface">
+        <div className="flex items-center gap-3">
+          <Mascot who="elephant" size={40} halo />
+          <div>
+            <h1 className="font-bold text-ink leading-tight">Knowledge Graph</h1>
+            <p className="text-xs text-ink-soft">{elephant.name} keeps track of how it connects</p>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           {/* Legend */}
-          <div className="flex items-center gap-3 text-xs text-zinc-500">
+          <div className="hidden sm:flex items-center gap-3 text-xs text-ink-soft">
             {[
-              { color: '#374151', label: 'Not started' },
-              { color: '#60a5fa', label: 'Learning' },
-              { color: '#fbbf24', label: 'Progressing' },
-              { color: '#10b981', label: 'Mastered' },
+              { color: '#C9C5BD', label: 'Not started' },
+              { color: '#3BA9E0', label: 'Learning' },
+              { color: '#F5A524', label: 'Progressing' },
+              { color: '#22B07D', label: 'Mastered' },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded-full" style={{ background: color }} />
@@ -122,7 +130,8 @@ export default function KnowledgeGraphClient({ roadmaps }: Props) {
           <select
             value={selectedRoadmap}
             onChange={e => setSelectedRoadmap(e.target.value)}
-            className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-sm text-zinc-300 focus:outline-none focus:border-amber-400/50"
+            className="bg-paper border border-line rounded-lg px-3 py-1.5 text-sm text-ink-soft focus:outline-none focus:ring-2"
+            style={{ ['--tw-ring-color' as string]: elephant.accent }}
           >
             {roadmaps.map(r => (
               <option key={r.id} value={r.id}>{r.title}</option>
@@ -135,8 +144,8 @@ export default function KnowledgeGraphClient({ roadmaps }: Props) {
       <div className="flex-1 relative">
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex items-center gap-3 text-zinc-400">
-              <Loader2 className="w-5 h-5 animate-spin text-amber-400" />
+            <div className="flex items-center gap-3 text-ink-soft">
+              <Loader2 className="w-5 h-5 animate-spin" style={{ color: elephant.accent }} />
               Loading graph...
             </div>
           </div>
@@ -150,11 +159,11 @@ export default function KnowledgeGraphClient({ roadmaps }: Props) {
             fitView
             attributionPosition="bottom-right"
           >
-            <Background color="#1f2937" gap={20} />
-            <Controls className="!bg-gray-900 !border-white/10" />
+            <Background color="#E6E3DC" gap={20} />
+            <Controls className="!bg-white !border-line !shadow-sm" />
             <MiniMap
               nodeColor={n => masteryColor((n.data?.mastery as number) ?? 0)}
-              className="!bg-gray-900 !border-white/10"
+              className="!bg-white !border-line"
             />
           </ReactFlow>
         )}
@@ -162,8 +171,8 @@ export default function KnowledgeGraphClient({ roadmaps }: Props) {
         {!loading && nodes.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <GitBranch className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
-              <p className="text-zinc-500 text-sm">No nodes found for this roadmap</p>
+              <Mascot who="elephant" size={64} className="mx-auto mb-3" />
+              <p className="text-ink-soft text-sm">No nodes found for this roadmap</p>
             </div>
           </div>
         )}
