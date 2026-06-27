@@ -4,6 +4,10 @@ import { Profile } from '@/types/database'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { Loader2, CheckCircle, Trophy, Flame, LogOut, Zap } from 'lucide-react'
+import Mascot from '@/components/crew/Mascot'
+import { CREW } from '@/lib/crew'
+
+const fox = CREW.fox
 
 export default function ProfileClient({ profile }: { profile: Profile | null }) {
   const router = useRouter()
@@ -35,11 +39,11 @@ export default function ProfileClient({ profile }: { profile: Profile | null }) 
     <div className="p-5 sm:p-8 max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-8 pt-2">
-        <h1 className="text-2xl font-bold text-white">Profile</h1>
+        <h1 className="text-2xl font-bold text-ink">Profile</h1>
         <button
           onClick={signOut}
           disabled={signingOut}
-          className="flex items-center gap-1.5 text-sm text-zinc-600 hover:text-red-400 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-ink-soft hover:text-rose-600 transition-colors"
         >
           {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
           Sign out
@@ -47,79 +51,86 @@ export default function ProfileClient({ profile }: { profile: Profile | null }) 
       </div>
 
       {/* Avatar & identity */}
-      <div className="flex items-center gap-4 mb-8 pb-8 border-b border-zinc-800">
-        <div className="w-14 h-14 rounded-xl bg-amber-400 flex items-center justify-center text-xl font-black text-zinc-950 flex-shrink-0">
+      <div className="flex items-center gap-4 mb-8 p-5 bg-surface border border-line rounded-2xl">
+        <div
+          className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black text-white flex-shrink-0"
+          style={{ background: fox.accent }}
+        >
           {name?.[0]?.toUpperCase() ?? 'U'}
         </div>
-        <div>
-          <div className="font-bold text-white text-lg">{name || 'Learner'}</div>
-          <div className="text-zinc-500 text-sm">Level {level}</div>
+        <div className="flex-1">
+          <div className="font-bold text-ink text-lg">{name || 'Learner'}</div>
+          <div className="text-ink-soft text-sm">Level {level}</div>
         </div>
+        <Mascot who="fox" size={44} />
       </div>
 
       {/* Stats */}
-      <div className="flex items-center gap-6 mb-8 pb-8 border-b border-zinc-800">
+      <div className="flex items-center gap-6 mb-8 p-5 bg-surface border border-line rounded-2xl">
         <div>
-          <div className="text-2xl font-bold text-white tabular-nums">{(profile?.total_xp ?? 0).toLocaleString()}</div>
-          <div className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
-            <Zap className="w-3 h-3 text-amber-400" /> XP earned
+          <div className="text-2xl font-bold text-ink tabular-nums">{(profile?.total_xp ?? 0).toLocaleString()}</div>
+          <div className="text-xs text-ink-soft mt-0.5 flex items-center gap-1">
+            <Zap className="w-3 h-3" style={{ color: fox.accent }} /> XP earned
           </div>
         </div>
-        <div className="w-px h-8 bg-zinc-800" />
+        <div className="w-px h-8 bg-line" />
         <div>
-          <div className="text-2xl font-bold text-white tabular-nums">{profile?.streak_count ?? 0}</div>
-          <div className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
-            <Flame className="w-3 h-3 text-orange-400" /> day streak
+          <div className="text-2xl font-bold text-ink tabular-nums">{profile?.streak_count ?? 0}</div>
+          <div className="text-xs text-ink-soft mt-0.5 flex items-center gap-1">
+            <Flame className="w-3 h-3 text-orange-500" /> day streak
           </div>
         </div>
-        <div className="w-px h-8 bg-zinc-800" />
+        <div className="w-px h-8 bg-line" />
         <div>
-          <div className="text-2xl font-bold text-white tabular-nums">{level}</div>
-          <div className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
-            <Trophy className="w-3 h-3 text-amber-400" /> level
+          <div className="text-2xl font-bold text-ink tabular-nums">{level}</div>
+          <div className="text-xs text-ink-soft mt-0.5 flex items-center gap-1">
+            <Trophy className="w-3 h-3" style={{ color: fox.accent }} /> level
           </div>
         </div>
       </div>
 
       {/* XP progress */}
       <div className="mb-8">
-        <div className="flex justify-between text-xs text-zinc-500 mb-2">
+        <div className="flex justify-between text-xs text-ink-soft mb-2">
           <span>Level {level} → {level + 1}</span>
           <span>{xpInLevel}/100 XP</span>
         </div>
-        <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
+        <div className="h-2 bg-line rounded-full overflow-hidden">
           <div
-            className="h-full bg-amber-400 rounded-full transition-all"
-            style={{ width: `${xpInLevel}%` }}
+            className="h-full rounded-full transition-all"
+            style={{ width: `${xpInLevel}%`, background: fox.accent }}
           />
         </div>
-        <p className="text-xs text-zinc-600 mt-2">{100 - xpInLevel} XP to next level</p>
+        <p className="text-xs text-ink-faint mt-2">{100 - xpInLevel} XP to next level</p>
       </div>
 
       {/* Edit form */}
       <div className="space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Display Name</label>
+          <label className="block text-xs font-semibold text-ink-soft uppercase tracking-wider mb-2">Display Name</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors"
+            className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-sm text-ink focus:outline-none focus:ring-2 transition-all"
+            style={{ ['--tw-ring-color' as string]: fox.accent }}
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Bio</label>
+          <label className="block text-xs font-semibold text-ink-soft uppercase tracking-wider mb-2">Bio</label>
           <textarea
             value={bio}
             onChange={e => setBio(e.target.value)}
             rows={3}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors resize-none placeholder-zinc-700"
+            className="w-full bg-surface border border-line rounded-xl px-4 py-3 text-sm text-ink focus:outline-none focus:ring-2 transition-all resize-none placeholder-ink-faint"
+            style={{ ['--tw-ring-color' as string]: fox.accent }}
             placeholder="Tell us about yourself..."
           />
         </div>
         <button
           onClick={save}
           disabled={saving}
-          className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-50 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors text-zinc-950"
+          className="w-full text-white py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50 transition-transform hover:enabled:-translate-y-0.5"
+          style={{ background: fox.accent }}
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : null}
           {saved ? 'Saved' : 'Save Changes'}

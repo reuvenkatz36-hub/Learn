@@ -3,7 +3,11 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, Lock, ChevronRight, Clock, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import Mascot from '@/components/crew/Mascot'
+import { CREW } from '@/lib/crew'
 import { RoadmapSection, Roadmap, Lesson } from '@/types/database'
+
+const owl = CREW.owl
 
 export default async function RoadmapPage({ params }: { params: Promise<{ roadmapId: string }> }) {
   const { roadmapId } = await params
@@ -29,40 +33,40 @@ export default async function RoadmapPage({ params }: { params: Promise<{ roadma
 
   return (
     <div className="p-5 sm:p-8 max-w-2xl mx-auto">
-      <Link href="/learn" className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors mb-6">
+      <Link href="/learn" className="inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-ink transition-colors mb-6">
         <ArrowLeft className="w-3.5 h-3.5" /> Back
       </Link>
 
       {/* Roadmap header */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <span className={cn(
-            'text-[10px] font-bold uppercase tracking-wider',
-            roadmap.difficulty === 'beginner' && 'text-emerald-400',
-            roadmap.difficulty === 'intermediate' && 'text-amber-400',
-            roadmap.difficulty === 'advanced' && 'text-red-400',
-          )}>
-            {roadmap.difficulty}
-          </span>
-          <span className="text-zinc-700 text-xs">·</span>
-          <span className="text-zinc-600 text-xs flex items-center gap-1">
-            <Clock className="w-3 h-3" /> {roadmap.estimated_hours}h estimated
-          </span>
+        <div className="flex items-start gap-3 mb-4">
+          <Mascot who="owl" size={48} halo />
+          <div className="flex items-center gap-2 pt-1">
+            <span
+              className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
+              style={{ color: owl.accent, background: owl.accentSoft }}
+            >
+              {roadmap.difficulty}
+            </span>
+            <span className="text-ink-faint text-xs flex items-center gap-1">
+              <Clock className="w-3 h-3" /> {roadmap.estimated_hours}h estimated
+            </span>
+          </div>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">{roadmap.title}</h1>
-        <p className="text-zinc-500 text-sm leading-relaxed mb-5">{roadmap.description}</p>
+        <h1 className="text-2xl font-bold text-ink mb-2">{roadmap.title}</h1>
+        <p className="text-ink-soft text-sm leading-relaxed mb-5">{roadmap.description}</p>
 
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-zinc-800 rounded-full overflow-hidden">
-            <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+          <div className="flex-1 h-2 bg-line rounded-full overflow-hidden">
+            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: owl.accent }} />
           </div>
-          <span className="text-xs text-zinc-500 tabular-nums">{completed}/{total}</span>
-          <span className="text-xs font-bold text-amber-400 tabular-nums">{pct}%</span>
+          <span className="text-xs text-ink-soft tabular-nums">{completed}/{total}</span>
+          <span className="text-xs font-bold tabular-nums" style={{ color: owl.accent }}>{pct}%</span>
         </div>
       </div>
 
       {/* Lessons list */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {lessons?.map((lesson, i) => {
           const section = sections[i]
           const isLocked = lesson.status === 'locked'
@@ -73,46 +77,42 @@ export default async function RoadmapPage({ params }: { params: Promise<{ roadma
             <div
               key={lesson.id}
               className={cn(
-                'flex items-start gap-4 p-4 rounded-xl border transition-all',
-                isLocked && 'bg-zinc-900/50 border-zinc-800/50 opacity-50',
-                isAvailable && 'bg-zinc-900 border-zinc-800 hover:border-zinc-700',
-                isCompleted && 'bg-zinc-900/50 border-zinc-800/50',
+                'flex items-start gap-4 p-4 rounded-2xl border bg-surface transition-all',
+                isLocked && 'opacity-60',
+                isAvailable && 'border-line hover:shadow-md',
+                isCompleted && 'border-line',
               )}
+              style={isAvailable ? { borderColor: owl.accent } : undefined}
             >
-              <div className={cn(
-                'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5',
-                isLocked && 'bg-zinc-800',
-                isAvailable && 'bg-amber-400/10',
-                isCompleted && 'bg-emerald-400/10',
-              )}>
-                {isLocked && <Lock className="w-3.5 h-3.5 text-zinc-600" />}
-                {isAvailable && <span className="text-xs font-bold text-amber-400">{i + 1}</span>}
-                {isCompleted && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                style={{
+                  background: isCompleted ? 'rgba(34,176,125,0.12)' : isAvailable ? owl.accentSoft : '#F1EFEA',
+                }}
+              >
+                {isLocked && <Lock className="w-3.5 h-3.5 text-ink-faint" />}
+                {isAvailable && <span className="text-xs font-bold" style={{ color: owl.accent }}>{i + 1}</span>}
+                {isCompleted && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <h3 className={cn(
-                    'font-semibold text-sm',
-                    isLocked && 'text-zinc-600',
-                    isCompleted && 'text-zinc-500',
-                    isAvailable && 'text-white',
-                  )}>
+                  <h3 className={cn('font-semibold text-sm', isLocked ? 'text-ink-faint' : isCompleted ? 'text-ink-soft' : 'text-ink')}>
                     {lesson.title}
                   </h3>
                   {section && (
-                    <span className="text-[10px] text-zinc-600 flex items-center gap-1 flex-shrink-0">
+                    <span className="text-[10px] text-ink-faint flex items-center gap-1 flex-shrink-0">
                       <Clock className="w-2.5 h-2.5" /> {section.estimatedMinutes}m
                     </span>
                   )}
                 </div>
                 {section?.description && (
-                  <p className="text-xs text-zinc-600 mt-0.5 leading-relaxed">{section.description}</p>
+                  <p className="text-xs text-ink-soft mt-0.5 leading-relaxed">{section.description}</p>
                 )}
                 {section?.topics && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {section.topics.slice(0, 3).map(t => (
-                      <span key={t} className="text-[10px] bg-zinc-800 text-zinc-500 px-2 py-0.5 rounded-md">{t}</span>
+                      <span key={t} className="text-[10px] bg-paper border border-line text-ink-soft px-2 py-0.5 rounded-md">{t}</span>
                     ))}
                   </div>
                 )}
@@ -121,7 +121,8 @@ export default async function RoadmapPage({ params }: { params: Promise<{ roadma
               {isAvailable && (
                 <Link
                   href={`/learn/${roadmapId}/${lesson.id}`}
-                  className="flex items-center gap-1 bg-amber-400 hover:bg-amber-300 transition-colors text-zinc-950 text-xs font-bold px-3 py-1.5 rounded-lg flex-shrink-0"
+                  className="flex items-center gap-1 text-white text-xs font-bold px-3 py-1.5 rounded-xl flex-shrink-0 transition-transform hover:-translate-y-0.5"
+                  style={{ background: owl.accent }}
                 >
                   {lesson.status === 'in_progress' ? 'Continue' : 'Start'}
                   <ChevronRight className="w-3 h-3" />
