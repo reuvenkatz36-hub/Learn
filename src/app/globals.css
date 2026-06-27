@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
+  --background: #FAFAF8;
+  --foreground: #1C1B1A;
 }
 
 * {
@@ -32,6 +32,24 @@ body {
   animation: xp-pop 0.8s ease-out forwards;
 }
 
+/* Crew mascot idle motion */
+@keyframes crew-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.crew-bob {
+  animation: crew-bob 3.2s ease-in-out infinite;
+}
+@keyframes crew-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.08); }
+}
+.crew-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: crew-blink 4.5s ease-in-out infinite;
+}
+
 .react-flow__node {
   border-radius: 8px;
 }
@@ -40,9 +58,9 @@ body {
   width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #18181b;
+  background: #F1EFEA;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: #D6D3CC;
   border-radius: 3px;
 }

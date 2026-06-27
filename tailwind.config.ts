@@ -11,6 +11,35 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // Light "warm paper" base
+        paper: "#FAFAF8",
+        surface: "#FFFFFF",
+        ink: "#1C1B1A",
+        "ink-soft": "#6B6864",
+        "ink-faint": "#9C9892",
+        line: "#ECEAE4",
+        // Crew signature accents (one per character)
+        crew: {
+          fox: "#FF6B5E",
+          owl: "#5B6CFF",
+          cat: "#8B5CF6",
+          beaver: "#F5A524",
+          dog: "#22B07D",
+          elephant: "#3BA9E0",
+        },
+      },
+      keyframes: {
+        "crew-bob": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-5px)" },
+        },
+        "crew-blink": {
+          "0%, 92%, 100%": { transform: "scaleY(1)" },
+          "96%": { transform: "scaleY(0.1)" },
+        },
+      },
+      animation: {
+        "crew-bob": "crew-bob 3.2s ease-in-out infinite",
       },
       typography: {
         invert: {
