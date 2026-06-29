@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Profile, Roadmap, DailyActivity } from '@/types/database'
-import { Plus, ChevronRight, BookOpen, Zap, Flame } from 'lucide-react'
+import { Plus, ChevronRight, BookOpen, Zap, Flame, Upload } from 'lucide-react'
 import NewRoadmapModal from '@/components/dashboard/NewRoadmapModal'
+import ImportModal from '@/components/dashboard/ImportModal'
 import WelcomeModal from '@/components/dashboard/WelcomeModal'
 import Mascot from '@/components/crew/Mascot'
 import { CREW } from '@/lib/crew'
@@ -33,6 +34,7 @@ const owl = CREW.owl
 
 export default function DashboardClient({ profile, roadmaps, activity }: Props) {
   const [showNewRoadmap, setShowNewRoadmap] = useState(false)
+  const [showImport, setShowImport] = useState(false)
   const [suggestedTopic, setSuggestedTopic] = useState<string | undefined>()
   const [showWelcome, setShowWelcome] = useState(false)
 
@@ -58,14 +60,23 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
             </h1>
           </div>
         </div>
-        <button
-          onClick={() => setShowNewRoadmap(true)}
-          className="flex items-center gap-1.5 text-white px-4 py-2 rounded-xl text-sm font-bold transition-transform hover:-translate-y-0.5"
-          style={{ background: fox.accent }}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          New
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowImport(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold border border-line bg-surface text-ink-soft hover:text-ink hover:shadow-sm transition-all"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            Import
+          </button>
+          <button
+            onClick={() => setShowNewRoadmap(true)}
+            className="flex items-center gap-1.5 text-white px-4 py-2 rounded-xl text-sm font-bold transition-transform hover:-translate-y-0.5"
+            style={{ background: fox.accent }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            New
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -173,6 +184,9 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
 
       {showNewRoadmap && (
         <NewRoadmapModal onClose={() => { setShowNewRoadmap(false); setSuggestedTopic(undefined) }} initialTopic={suggestedTopic} />
+      )}
+      {showImport && (
+        <ImportModal onClose={() => setShowImport(false)} />
       )}
       {showWelcome && (
         <WelcomeModal name={profile?.display_name ?? ''} onStart={startFromWelcome} onDismiss={dismissWelcome} />

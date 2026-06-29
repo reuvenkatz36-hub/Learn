@@ -288,18 +288,37 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
 function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQuiz: Quiz | null }) {
   const [quiz, setQuiz] = useState<Quiz | null>(existingQuiz)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
   const [answers, setAnswers] = useState<Record<string, number>>({})
   const [submitted, setSubmitted] = useState(!!existingQuiz?.submitted_at)
   const [result, setResult] = useState<{ score: number; maxScore: number } | null>(
     existingQuiz?.score != null ? { score: existingQuiz.score, maxScore: existingQuiz.max_score ?? 5 } : null
   )
+  const autoStarted = useRef(false)
 
-  const generateQuiz = async () => {
+  const generateQuiz = useCallback(async () => {
     setLoading(true)
-    const res = await fetch('/api/quiz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId, action: 'generate' }) })
-    setQuiz(await res.json())
-    setLoading(false)
-  }
+    setError(false)
+    try {
+      const res = await fetch('/api/quiz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId, action: 'generate' }) })
+      const data = await res.json()
+      if (!res.ok || !data?.questions) throw new Error('Quiz generation failed')
+      setQuiz(data)
+    } catch {
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }, [lessonId])
+
+  // The quiz should be ready without the learner clicking anything: show the
+  // pre-built quiz instantly, or quietly generate one the first time it's opened.
+  useEffect(() => {
+    if (!quiz && !autoStarted.current) {
+      autoStarted.current = true
+      generateQuiz()
+    }
+  }, [quiz, generateQuiz])
 
   const submitQuiz = async () => {
     if (!quiz) return
@@ -313,12 +332,26 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
 
   if (!quiz) return (
     <div className="text-center py-16">
-      <Mascot who="cat" size={80} className="mx-auto mb-4" />
-      <h3 className="font-bold text-ink text-lg mb-1">{cat.name} wants to test you</h3>
-      <p className="text-ink-soft text-sm mb-6">5 questions based on this lesson</p>
-      <button onClick={generateQuiz} disabled={loading} className="text-white px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mx-auto disabled:opacity-50 transition-transform hover:enabled:-translate-y-0.5" style={{ background: cat.accent }}>
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} Generate Quiz
-      </button>
+      <Mascot who="cat" size={80} className="mx-auto mb-4" pose={error ? 'sad' : 'idle'} />
+      {error ? (
+        <>
+          <h3 className="font-bold text-ink text-lg mb-1">{cat.name} hit a snag</h3>
+          <p className="text-ink-soft text-sm mb-6">Couldn&apos;t prepare your quiz just now</p>
+          <button onClick={generateQuiz} disabled={loading} className="text-white px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mx-auto disabled:opacity-50 transition-transform hover:enabled:-translate-y-0.5" style={{ background: cat.accent }}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} Try again
+          </button>
+        </>
+      ) : (
+        <>
+          <h3 className="font-bold text-ink text-lg mb-1">{cat.name} is preparing your quiz</h3>
+          <p className="text-ink-soft text-sm mb-6">5 questions based on this lesson</p>
+          <div className="flex gap-1.5 justify-center">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: cat.accent, animationDelay: `${i * 0.15}s` }} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 
@@ -389,17 +422,36 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
 function AssignmentSection({ lessonId, existingAssignment }: { lessonId: string; existingAssignment: Assignment | null }) {
   const [assignment, setAssignment] = useState<Assignment | null>(existingAssignment)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
   const [submission, setSubmission] = useState(existingAssignment?.submission ?? '')
   const [streaming, setStreaming] = useState(false)
   const [feedback, setFeedback] = useState(existingAssignment?.ai_feedback ?? '')
   const [score, setScore] = useState<number | null>(existingAssignment?.score ?? null)
+  const autoStarted = useRef(false)
 
-  const generateAssignment = async () => {
+  const generateAssignment = useCallback(async () => {
     setLoading(true)
-    const res = await fetch('/api/assignment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId }) })
-    setAssignment(await res.json())
-    setLoading(false)
-  }
+    setError(false)
+    try {
+      const res = await fetch('/api/assignment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId }) })
+      const data = await res.json()
+      if (!res.ok || !data?.prompt) throw new Error('Assignment generation failed')
+      setAssignment(data)
+    } catch {
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }, [lessonId])
+
+  // Like the quiz, the practice task is ready on open — generated ahead of time
+  // by the course build, or fetched quietly the first time if it isn't there yet.
+  useEffect(() => {
+    if (!assignment && !autoStarted.current) {
+      autoStarted.current = true
+      generateAssignment()
+    }
+  }, [assignment, generateAssignment])
 
   const submitAssignment = async () => {
     if (!assignment || !submission.trim()) return
@@ -431,12 +483,26 @@ function AssignmentSection({ lessonId, existingAssignment }: { lessonId: string;
 
   if (!assignment) return (
     <div className="text-center py-16">
-      <Mascot who="beaver" size={80} className="mx-auto mb-4" />
-      <h3 className="font-bold text-ink text-lg mb-1">{beaver.name} has a build for you</h3>
-      <p className="text-ink-soft text-sm mb-6">Apply what you&apos;ve learned with a real task</p>
-      <button onClick={generateAssignment} disabled={loading} className="text-white px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mx-auto disabled:opacity-50 transition-transform hover:enabled:-translate-y-0.5" style={{ background: beaver.accent }}>
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} Get Assignment
-      </button>
+      <Mascot who="beaver" size={80} className="mx-auto mb-4" pose={error ? 'sad' : 'idle'} />
+      {error ? (
+        <>
+          <h3 className="font-bold text-ink text-lg mb-1">{beaver.name} hit a snag</h3>
+          <p className="text-ink-soft text-sm mb-6">Couldn&apos;t prepare your task just now</p>
+          <button onClick={generateAssignment} disabled={loading} className="text-white px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 mx-auto disabled:opacity-50 transition-transform hover:enabled:-translate-y-0.5" style={{ background: beaver.accent }}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} Try again
+          </button>
+        </>
+      ) : (
+        <>
+          <h3 className="font-bold text-ink text-lg mb-1">{beaver.name} is preparing your task</h3>
+          <p className="text-ink-soft text-sm mb-6">Apply what you&apos;ve learned with a real build</p>
+          <div className="flex gap-1.5 justify-center">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: beaver.accent, animationDelay: `${i * 0.15}s` }} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 

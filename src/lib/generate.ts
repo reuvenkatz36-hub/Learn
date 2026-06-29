@@ -1,3 +1,4 @@
+import type Anthropic from '@anthropic-ai/sdk'
 import { anthropic, MODEL } from '@/lib/anthropic'
 
 // Centralized content generation. Pure functions: they call Claude and return
@@ -147,6 +148,60 @@ Make it hands-on and achievable within 20-30 minutes.`,
   )
   const data = extractJson(text) as { prompt: string }
   return data.prompt
+}
+
+export interface ImportedLesson {
+  title: string
+  sections: LessonContentSection[]
+  questions: QuizQuestion[]
+}
+
+// Turn raw source material (pasted text or a PDF) into a single self-contained
+// micro-lesson plus quiz in ONE model call. Powers the "drop a PDF or text"
+// importer — the reading feeds the same Spotify-style reader, the questions feed
+// the same quiz UI.
+export async function generateLessonFromSource(params: {
+  text?: string
+  pdfBase64?: string
+}): Promise<ImportedLesson> {
+  const instruction = `You are turning the user's source material into a single engaging micro-lesson with a quiz, formatted for a calm, focused reading experience.
+
+Return ONLY valid JSON with this exact shape:
+{
+  "title": "string (concise lesson title, max 8 words)",
+  "sections": [
+    { "title": "string", "content": "string (150-350 words, clear and engaging)", "type": "text|example|key_point|exercise" }
+  ],
+  "questions": [
+    { "id": "q1", "question": "string", "options": ["A", "B", "C", "D"], "correctIndex": 0, "explanation": "string explaining the correct answer" }
+  ]
+}
+
+Rules:
+- Write 4 to 7 sections with varied types that faithfully teach the source material.
+- Write exactly 5 quiz questions that test understanding (not just recall) of the material.
+- Base everything strictly on the provided source material — do not invent facts that aren't supported by it.
+- No markdown outside JSON strings.`
+
+  const content: Anthropic.ContentBlockParam[] = params.pdfBase64
+    ? [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: params.pdfBase64 } },
+        { type: 'text', text: instruction },
+      ]
+    : [{ type: 'text', text: `${instruction}\n\nSOURCE MATERIAL:\n${params.text ?? ''}` }]
+
+  const msg = await anthropic.messages.create({
+    model: MODEL,
+    max_tokens: 8000,
+    messages: [{ role: 'user', content }],
+  })
+
+  const text = msg.content[0]?.type === 'text' ? msg.content[0].text : ''
+  const data = extractJson(text) as ImportedLesson
+  if (!data.title || !Array.isArray(data.sections) || !Array.isArray(data.questions)) {
+    throw new Error('Model response missing expected fields')
+  }
+  return data
 }
 
 export function summarizeContent(content: unknown): string {
