@@ -55,7 +55,9 @@ function tone({ freq, type = 'sine', duration = 0.12, gain = 0.06, freqEnd, dela
   const osc = ac.createOscillator()
   const g = ac.createGain()
   osc.type = type
-  osc.frequency.setValueAtTime(freq, t0)
+  // Tiny random detune so repeated taps feel organic, not robotic.
+  const f = freq * (1 + (Math.random() - 0.5) * 0.04)
+  osc.frequency.setValueAtTime(f, t0)
   if (freqEnd) osc.frequency.exponentialRampToValueAtTime(Math.max(1, freqEnd), t0 + duration)
   // Quick attack, smooth exponential release — soft and clicky, never harsh.
   g.gain.setValueAtTime(0.0001, t0)
@@ -69,10 +71,30 @@ function tone({ freq, type = 'sine', duration = 0.12, gain = 0.06, freqEnd, dela
 
 // ---- public sound vocabulary -------------------------------------------------
 
-/** Soft click on any tap / button press. */
+/** Subtle low tap for empty / background presses. */
 export function playTap() {
   ensureLoaded()
-  tone({ freq: 220, freqEnd: 150, type: 'triangle', duration: 0.07, gain: 0.05 })
+  tone({ freq: 200, freqEnd: 150, type: 'triangle', duration: 0.06, gain: 0.035 })
+}
+
+/** Crisp click for buttons / actions. */
+export function playClick() {
+  ensureLoaded()
+  tone({ freq: 340, freqEnd: 260, type: 'triangle', duration: 0.06, gain: 0.05 })
+  tone({ freq: 680, type: 'sine', duration: 0.03, gain: 0.02 })
+}
+
+/** Light two-tone blip for navigation / tabs. */
+export function playNav() {
+  ensureLoaded()
+  tone({ freq: 520, type: 'sine', duration: 0.06, gain: 0.04 })
+  tone({ freq: 780, type: 'sine', duration: 0.07, gain: 0.04, delay: 0.05 })
+}
+
+/** Soft mid pick for selecting an option / focusing a field. */
+export function playPick() {
+  ensureLoaded()
+  tone({ freq: 440, type: 'sine', duration: 0.07, gain: 0.045 })
 }
 
 /** Very subtle high tick as a new line scrolls into focus while reading. */

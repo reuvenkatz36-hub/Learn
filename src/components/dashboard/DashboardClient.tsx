@@ -27,12 +27,13 @@ interface Props {
   profile: Profile | null
   roadmaps: Roadmap[]
   activity: DailyActivity[]
+  progress: Record<string, { completed: number; total: number }>
 }
 
 const fox = CREW.fox
 const owl = CREW.owl
 
-export default function DashboardClient({ profile, roadmaps, activity }: Props) {
+export default function DashboardClient({ profile, roadmaps, activity, progress }: Props) {
   const [showNewRoadmap, setShowNewRoadmap] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [suggestedTopic, setSuggestedTopic] = useState<string | undefined>()
@@ -130,8 +131,10 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
         ) : (
           <div className="space-y-2.5">
             {roadmaps.slice(0, 6).map(roadmap => {
-              const sections = Array.isArray(roadmap.sections) ? (roadmap.sections as unknown as Array<{ completed?: boolean }>) : []
-              const progress = sections.length > 0 ? Math.round((sections.filter(s => s.completed).length / sections.length) * 100) : 0
+              const sections = Array.isArray(roadmap.sections) ? (roadmap.sections as unknown as Array<unknown>) : []
+              const stats = progress[roadmap.id] ?? { completed: 0, total: sections.length }
+              const total = stats.total || sections.length
+              const pct = total > 0 ? Math.round((stats.completed / total) * 100) : 0
               return (
                 <Link
                   key={roadmap.id}
@@ -146,16 +149,16 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
                       >
                         {roadmap.difficulty}
                       </span>
-                      <span className="text-ink-faint text-[10px]">{sections.length} lessons</span>
+                      <span className="text-ink-faint text-[10px]">{total} lessons</span>
                     </div>
                     <h3 className="font-semibold text-ink text-sm truncate mb-2.5">
                       {roadmap.title}
                     </h3>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-1.5 bg-line rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: owl.accent }} />
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: owl.accent }} />
                       </div>
-                      <span className="text-[10px] text-ink-soft tabular-nums w-6 text-right">{progress}%</span>
+                      <span className="text-[10px] text-ink-soft tabular-nums w-6 text-right">{pct}%</span>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-ink-faint group-hover:text-ink flex-shrink-0 transition-colors" />

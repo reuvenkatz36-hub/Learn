@@ -10,8 +10,12 @@ const memo = CREW.elephant
 export interface BrainCourse {
   id: string
   title: string
-  lessons: { id: string; completed: boolean }[]
+  /** strength is 0..1 — reading a lesson gets partway, acing its quiz fills it. */
+  lessons: { id: string; strength: number }[]
 }
+
+// A neuron counts as "lit" once there's any real signal behind it.
+const LIT = 0.05
 
 interface Props {
   courses: BrainCourse[]
@@ -57,9 +61,13 @@ export default function BrainClient({ courses }: Props) {
     )
   }, [courses])
 
-  const completedCount = lessons.filter(l => l.completed).length
+  const litCount = lessons.filter(l => l.strength > LIT).length
   const totalCount = lessons.length
-  const fillPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+  // Fill = average mastery across every lesson, so 100% needs full mastery
+  // everywhere — finishing the readings alone tops out well below 100.
+  const fillPct = totalCount > 0
+    ? Math.round((lessons.reduce((s, l) => s + l.strength, 0) / totalCount) * 100)
+    : 0
 
   // Sample neuron positions: one per lesson, plus ambient dots for brain texture.
   const { neurons, ambient, synapses } = useMemo(() => {
@@ -90,8 +98,9 @@ export default function BrainClient({ courses }: Props) {
         if (d < bestD) { bestD = d; best = j }
       })
       if (best >= 0 && bestD < 900) {
-        const lit = lessons[i]?.completed && (best < lessons.length ? lessons[best]?.completed : false)
-        syn.push({ x1: p.x, y1: p.y, x2: all[best].x, y2: all[best].y, lit: !!lit })
+        const a = (lessons[i]?.strength ?? 0) > 0.4
+        const b = best < lessons.length ? (lessons[best]?.strength ?? 0) > 0.4 : false
+        syn.push({ x1: p.x, y1: p.y, x2: all[best].x, y2: all[best].y, lit: a && b })
       }
     })
     return { neurons: neuronPts, ambient: ambientPts, synapses: syn }
@@ -117,12 +126,12 @@ export default function BrainClient({ courses }: Props) {
           </div>
           <div className="w-px h-8 bg-line" />
           <div>
-            <div className="text-2xl font-bold text-ink tabular-nums">{completedCount}</div>
+            <div className="text-2xl font-bold text-ink tabular-nums">{litCount}</div>
             <div className="text-xs text-ink-soft mt-0.5">neurons fired</div>
           </div>
           <div className="w-px h-8 bg-line" />
           <div>
-            <div className="text-2xl font-bold text-ink tabular-nums">{totalCount - completedCount}</div>
+            <div className="text-2xl font-bold text-ink tabular-nums">{totalCount - litCount}</div>
             <div className="text-xs text-ink-soft mt-0.5">still to learn</div>
           </div>
         </div>
@@ -182,12 +191,14 @@ export default function BrainClient({ courses }: Props) {
                 const lesson = lessons[i]
                 if (!lesson) return null
                 const dimmed = activeCourse && lesson.courseId !== activeCourse
-                if (lesson.completed) {
+                if (lesson.strength > LIT) {
+                  // brightness, glow and size grow with mastery strength
+                  const s = lesson.strength
                   return (
                     <g key={lesson.id} opacity={dimmed ? 0.2 : 1}>
-                      <circle cx={p.x} cy={p.y} r={6} fill={lesson.color} opacity={0.22} className="brain-glow" />
-                      <circle cx={p.x} cy={p.y} r={2.7} fill={lesson.color} />
-                      <circle cx={p.x - 0.8} cy={p.y - 0.8} r={0.9} fill="#fff" opacity={0.8} />
+                      <circle cx={p.x} cy={p.y} r={5 + 3 * s} fill={lesson.color} opacity={0.1 + 0.22 * s} className="brain-glow" />
+                      <circle cx={p.x} cy={p.y} r={2 + 1.2 * s} fill={lesson.color} opacity={0.55 + 0.45 * s} />
+                      {s > 0.85 && <circle cx={p.x - 0.8} cy={p.y - 0.8} r={0.9} fill="#fff" opacity={0.85} />}
                     </g>
                   )
                 }
@@ -210,7 +221,7 @@ export default function BrainClient({ courses }: Props) {
           <div className="flex flex-wrap gap-2">
             {courses.map((c, ci) => {
               const color = PALETTE[ci % PALETTE.length]
-              const done = c.lessons.filter(l => l.completed).length
+              const done = c.lessons.filter(l => l.strength > LIT).length
               const active = activeCourse === c.id
               return (
                 <button

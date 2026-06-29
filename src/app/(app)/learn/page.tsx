@@ -14,13 +14,20 @@ export default async function LearnPage() {
   if (!user) redirect('/auth/login')
   const userId = user!.id
 
-  const { data: rawRoadmaps } = await supabase
-    .from('roadmaps')
-    .select('*')
-    .eq('user_id', userId)
-    .order('updated_at', { ascending: false })
+  const [{ data: rawRoadmaps }, { data: lessons }] = await Promise.all([
+    supabase.from('roadmaps').select('*').eq('user_id', userId).order('updated_at', { ascending: false }),
+    supabase.from('lessons').select('roadmap_id, status').eq('user_id', userId),
+  ])
 
   const roadmaps = rawRoadmaps as Roadmap[] | null
+
+  // Real per-course progress from the lessons table.
+  const progressByRoadmap: Record<string, { completed: number; total: number }> = {}
+  for (const l of lessons ?? []) {
+    const p = (progressByRoadmap[l.roadmap_id] ??= { completed: 0, total: 0 })
+    p.total++
+    if (l.status === 'completed') p.completed++
+  }
 
   return (
     <div className="p-5 sm:p-8 max-w-2xl mx-auto">
@@ -48,9 +55,11 @@ export default async function LearnPage() {
       ) : (
         <div className="space-y-2.5">
           {roadmaps.map(roadmap => {
-            const sections = Array.isArray(roadmap.sections) ? (roadmap.sections as unknown as Array<{ completed?: boolean }>) : []
-            const completedSections = sections.filter(s => s.completed).length
-            const progress = sections.length > 0 ? Math.round((completedSections / sections.length) * 100) : 0
+            const sections = Array.isArray(roadmap.sections) ? (roadmap.sections as unknown as Array<unknown>) : []
+            const stats = progressByRoadmap[roadmap.id] ?? { completed: 0, total: sections.length }
+            const total = stats.total || sections.length
+            const completedSections = stats.completed
+            const progress = total > 0 ? Math.round((completedSections / total) * 100) : 0
 
             return (
               <Link
@@ -66,7 +75,7 @@ export default async function LearnPage() {
                     >
                       {roadmap.difficulty}
                     </span>
-                    <span className="text-ink-faint text-[10px]">{sections.length} lessons · {roadmap.estimated_hours}h</span>
+                    <span className="text-ink-faint text-[10px]">{total} lessons · {roadmap.estimated_hours}h</span>
                   </div>
                   <h3 className="font-semibold text-ink text-sm truncate mb-2.5">
                     {roadmap.title}
@@ -75,7 +84,7 @@ export default async function LearnPage() {
                     <div className="flex-1 h-1.5 bg-line rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${progress}%`, background: owl.accent }} />
                     </div>
-                    <span className="text-[10px] text-ink-soft tabular-nums">{completedSections}/{sections.length}</span>
+                    <span className="text-[10px] text-ink-soft tabular-nums">{completedSections}/{total}</span>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-ink-faint group-hover:text-ink flex-shrink-0 transition-colors" />
