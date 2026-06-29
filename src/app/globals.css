@@ -106,8 +106,15 @@ body {
   transform: rotate(45deg);
 }
 
-.react-flow__node {
-  border-radius: 8px;
+/* Brain neuron pulse */
+@keyframes brain-glow {
+  0%, 100% { opacity: 0.16; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.35); }
+}
+.brain-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: brain-glow 2.6s ease-in-out infinite;
 }
 
 ::-webkit-scrollbar {

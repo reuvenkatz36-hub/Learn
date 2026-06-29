@@ -106,7 +106,7 @@ export default function ChatClient({ initialMessages, roadmaps }: Props) {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-paper">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] bg-paper">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-line bg-surface">
         <div className="flex items-center gap-3">

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
 import Mascot from '@/components/crew/Mascot'
 import { CREW, type CrewId } from '@/lib/crew'
+import { playScrollTick, playComplete, playSuccess, playError } from '@/lib/sound'
 
 const owl = CREW.owl
 const cat = CREW.cat
@@ -109,6 +110,7 @@ function SpotifyReader({ lines, lessonId, onFinish }: { lines: Line[]; lessonId:
       if (closestIdx !== activeIdxRef.current) {
         activeIdxRef.current = closestIdx
         applyStyles(closestIdx)
+        playScrollTick()
       }
       const milestone = Math.floor(closestIdx / 8)
       if (milestone > lastXpMilestone.current) {
@@ -275,6 +277,7 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
         const earned = Math.max(10, Math.floor(lines.length / 8) * 10)
         setXpEarned(earned)
         setDone(true)
+        playComplete()
         fetch('/api/lesson/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -328,6 +331,8 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
     setResult({ score: data.score, maxScore: data.maxScore })
     setSubmitted(true)
     setLoading(false)
+    if (data.maxScore && data.score / data.maxScore >= 0.6) playSuccess()
+    else playError()
   }
 
   if (!quiz) return (

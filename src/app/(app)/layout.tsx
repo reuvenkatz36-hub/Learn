@@ -1,6 +1,8 @@
 import { createServerClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
-import BottomNav from '@/components/BottomNav'
+import TopNav from '@/components/TopNav'
+import SoundController from '@/components/SoundController'
+import type { Profile } from '@/types/database'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createServerClient()
@@ -8,12 +10,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect('/auth/login')
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+
   return (
     <div className="flex flex-col min-h-screen bg-paper">
-      <main className="flex-1 pb-20">
-        {children}
-      </main>
-      <BottomNav />
+      <SoundController />
+      <TopNav profile={profile as Profile | null} />
+      <main className="flex-1">{children}</main>
     </div>
   )
 }
