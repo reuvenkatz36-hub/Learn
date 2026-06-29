@@ -20,6 +20,7 @@ export async function POST(req: Request) {
 
   const roadmap = lesson.roadmaps as { topic: string; title: string; difficulty: string } | null
 
+  // Return a streaming response
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
@@ -58,6 +59,7 @@ Use varied section types. Make it engaging, practical, and educational. No markd
           }
         }
 
+        // Parse and save
         try {
           const jsonMatch = fullText.match(/\{[\s\S]*\}/)
           if (jsonMatch) {

@@ -1,12 +1,14 @@
 import Link from 'next/link'
-import { Zap, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import Mascot from '@/components/crew/Mascot'
+import CharacterSay from '@/components/crew/CharacterSay'
 import { CREW, type CrewId } from '@/lib/crew'
 
 const fox = CREW.fox
+const hoot = CREW.owl
 
 const crewLineup: { who: CrewId; title: string; desc: string }[] = [
-  { who: 'owl', title: 'Lessons', desc: 'Professor Hoot teaches you, one focused line at a time.' },
+  { who: 'owl', title: 'Lessons', desc: 'Principal Hoot runs the school and teaches your lessons, one focused line at a time.' },
   { who: 'cat', title: 'Quizzes', desc: 'Quill checks what stuck with sharp, quick questions.' },
   { who: 'beaver', title: 'Practice', desc: 'Buck sets hands-on builds so you actually apply it.' },
   { who: 'dog', title: 'Coaching', desc: 'Sunny answers anything, anytime, with your context.' },
@@ -21,10 +23,8 @@ export default function HomePage() {
       <nav className="fixed top-0 w-full z-50 border-b border-line bg-paper/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: fox.accent }}>
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold tracking-tight">Mastery</span>
+            <Mascot who="owl" size={28} animate={false} />
+            <span className="font-bold tracking-tight text-lg">Mastery</span>
           </div>
           <div className="flex items-center gap-1">
             <Link href="/auth/login" className="text-sm text-ink-soft hover:text-ink transition-colors px-4 py-2">
@@ -38,27 +38,28 @@ export default function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section className="pt-36 pb-16 px-6 text-center">
+      <section className="relative pt-32 pb-16 px-6 text-center bg-hero-glow">
         <div className="max-w-3xl mx-auto">
-          {/* Crew lineup */}
-          <div className="flex items-end justify-center gap-1 sm:gap-3 mb-8">
-            {(['owl', 'cat', 'fox', 'dog', 'beaver', 'elephant'] as CrewId[]).map((who, i) => (
-              <Mascot key={who} who={who} size={i === 2 ? 76 : 56} halo={i === 2} />
-            ))}
+          {/* Principal Hoot — the face of Mastery */}
+          <div className="flex justify-center mb-5">
+            <Mascot who="owl" size={132} aura />
           </div>
           <div className="inline-flex items-center gap-2 text-[11px] font-medium text-ink-soft border border-line bg-surface px-3 py-1 rounded-full mb-6">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: fox.accent }} />
-            Meet your learning crew
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: hoot.accent }} />
+            Meet {hoot.name}, your principal
           </div>
           <h1 className="text-5xl sm:text-6xl font-bold mb-6 leading-[1.05] tracking-tight">
             Learn anything with a
             <br />
-            <span style={{ color: fox.accent }}>crew that&apos;s got your back.</span>
+            <span className="bg-brand-regal bg-clip-text text-transparent">crew that&apos;s got your back.</span>
           </h1>
-          <p className="text-lg text-ink-soft mb-10 max-w-xl mx-auto leading-relaxed">
-            A teacher, a quizmaster, a coach, and more — each one an expert at their part of
-            how you learn. Build a course on any subject and they&apos;ll take it from there.
+          <p className="text-lg text-ink-soft mb-8 max-w-xl mx-auto leading-relaxed">
+            {hoot.name} runs the school. A teacher, a quizmaster, a coach, and more — each an
+            expert at their part of how you learn. Build a course and they take it from there.
           </p>
+          <div className="flex justify-center mb-10">
+            <CharacterSay who="owl" size={64} text="Welcome. Tell me what you'd like to master — I'll have my crew prepare the whole course for you." />
+          </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/auth/signup" className="group inline-flex items-center justify-center gap-2 text-white px-7 py-3.5 rounded-xl font-bold transition-transform hover:-translate-y-0.5" style={{ background: fox.accent }}>
               Start learning free

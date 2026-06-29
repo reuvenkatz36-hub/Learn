@@ -138,7 +138,7 @@ export default function ChatClient({ initialMessages, roadmaps }: Props) {
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center py-20">
-            <Mascot who="dog" size={96} halo />
+            <Mascot who="dog" size={96} halo pose="wave" />
             <h3 className="font-bold text-ink mt-4 mb-2">Hi, I&apos;m {dog.name}!</h3>
             <p className="text-sm text-ink-soft max-w-sm">
               Ask me anything about your learning journey. I can explain concepts, answer questions, and help you stay on track.

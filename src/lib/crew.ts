@@ -10,11 +10,16 @@ export interface CrewMember {
   role: string
   /** Solid signature accent (hex). */
   accent: string
+  /** A deeper shade of the accent — used for gradients / depth. */
+  accentDeep: string
   /** Soft tint for backgrounds (rgba/hex with low alpha works in inline styles). */
   accentSoft: string
   /** Friendly one-liner used in headers / empty states. */
   blurb: string
 }
+
+/** Regal gold used for Principal Hoot's trim (cap, tassel, robe accents). */
+export const HOOT_GOLD = '#E9B84A'
 
 export const CREW: Record<CrewId, CrewMember> = {
   fox: {
@@ -23,17 +28,19 @@ export const CREW: Record<CrewId, CrewMember> = {
     animal: 'Fox',
     role: 'Your guide',
     accent: '#FF6B5E',
+    accentDeep: '#E8472F',
     accentSoft: 'rgba(255,107,94,0.12)',
     blurb: 'Here to help you get started.',
   },
   owl: {
     id: 'owl',
-    name: 'Professor Hoot',
+    name: 'Principal Hoot',
     animal: 'Owl',
-    role: 'Your teacher',
-    accent: '#5B6CFF',
-    accentSoft: 'rgba(91,108,255,0.12)',
-    blurb: 'Let’s read through this together.',
+    role: 'The Principal',
+    accent: '#4F46E5',
+    accentDeep: '#3730A3',
+    accentSoft: 'rgba(79,70,229,0.12)',
+    blurb: 'Welcome. Let’s make you brilliant.',
   },
   cat: {
     id: 'cat',
@@ -41,6 +48,7 @@ export const CREW: Record<CrewId, CrewMember> = {
     animal: 'Cat',
     role: 'Your quizmaster',
     accent: '#8B5CF6',
+    accentDeep: '#6D28D9',
     accentSoft: 'rgba(139,92,246,0.12)',
     blurb: 'Think you’ve got it? Prove it.',
   },
@@ -50,6 +58,7 @@ export const CREW: Record<CrewId, CrewMember> = {
     animal: 'Beaver',
     role: 'Your coach for practice',
     accent: '#F5A524',
+    accentDeep: '#D4860B',
     accentSoft: 'rgba(245,165,36,0.14)',
     blurb: 'Time to build something real.',
   },
@@ -59,6 +68,7 @@ export const CREW: Record<CrewId, CrewMember> = {
     animal: 'Golden Retriever',
     role: 'Your coach',
     accent: '#22B07D',
+    accentDeep: '#168562',
     accentSoft: 'rgba(34,176,125,0.12)',
     blurb: 'Ask me anything, anytime.',
   },
@@ -68,6 +78,7 @@ export const CREW: Record<CrewId, CrewMember> = {
     animal: 'Elephant',
     role: 'Your memory keeper',
     accent: '#3BA9E0',
+    accentDeep: '#1E83B8',
     accentSoft: 'rgba(59,169,224,0.12)',
     blurb: 'See how it all connects.',
   },

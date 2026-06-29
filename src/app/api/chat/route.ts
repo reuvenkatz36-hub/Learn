@@ -9,6 +9,7 @@ export async function POST(req: Request) {
 
   const { message, roadmapId, history } = await req.json()
 
+  // Get roadmap context if provided
   let context = ''
   if (roadmapId) {
     const { data: roadmap } = await supabase
@@ -21,6 +22,7 @@ export async function POST(req: Request) {
     }
   }
 
+  // Save user message
   await supabase.from('chat_messages').insert({
     user_id: user.id,
     roadmap_id: roadmapId ?? null,
@@ -59,6 +61,7 @@ Be warm, encouraging, and educational.`,
           }
         }
 
+        // Save assistant message
         await supabase.from('chat_messages').insert({
           user_id: user.id,
           roadmap_id: roadmapId ?? null,

@@ -50,6 +50,62 @@ body {
   animation: crew-blink 4.5s ease-in-out infinite;
 }
 
+/* Animatable body parts */
+.crew-arm-l, .crew-arm-r {
+  transform-box: fill-box;
+  transform-origin: top center;
+}
+.crew-mouth {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Pose: wave (right arm swings up + back and forth) */
+@keyframes crew-wave {
+  0%, 100% { transform: rotate(8deg); }
+  25% { transform: rotate(150deg); }
+  50% { transform: rotate(130deg); }
+  75% { transform: rotate(150deg); }
+}
+.crew-pose-wave .crew-arm-r { animation: crew-wave 1.1s ease-in-out infinite; }
+
+/* Pose: talk (mouth opens/closes) */
+@keyframes crew-talk {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1.15); }
+}
+.crew-pose-talk .crew-mouth { animation: crew-talk 0.34s ease-in-out infinite; }
+
+/* Pose: think (right hand up toward chin) */
+.crew-pose-think .crew-arm-r { transform: rotate(135deg) translateX(2px); }
+
+/* Pose: cheer (jump + both arms up) */
+@keyframes crew-cheer {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-12px); }
+  60% { transform: translateY(-8px); }
+}
+.crew-pose-cheer { animation: crew-cheer 0.7s ease-in-out infinite; }
+.crew-pose-cheer .crew-arm-r { transform: rotate(155deg); }
+.crew-pose-cheer .crew-arm-l { transform: rotate(-155deg); }
+
+/* Pose: sad (slight droop) */
+.crew-pose-sad { transform: translateY(2px) rotate(-1deg); opacity: 0.92; }
+
+/* Speech bubble caret */
+.crew-bubble::after {
+  content: '';
+  position: absolute;
+  left: 22px;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  background: inherit;
+  border-bottom: 1px solid var(--line, #ECEAE4);
+  border-right: 1px solid var(--line, #ECEAE4);
+  transform: rotate(45deg);
+}
+
 .react-flow__node {
   border-radius: 8px;
 }

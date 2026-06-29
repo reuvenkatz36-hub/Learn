@@ -46,6 +46,7 @@ export interface Database {
           estimated_hours: number
           sections: Json
           status: 'active' | 'completed' | 'paused'
+          generation_status: 'generating' | 'ready' | 'error'
           created_at: string
           updated_at: string
         }
@@ -58,11 +59,13 @@ export interface Database {
           estimated_hours?: number
           sections?: Json
           status?: 'active' | 'completed' | 'paused'
+          generation_status?: 'generating' | 'ready' | 'error'
         }
         Update: {
           title?: string
           description?: string | null
           status?: 'active' | 'completed' | 'paused'
+          generation_status?: 'generating' | 'ready' | 'error'
           sections?: Json
         }
       }

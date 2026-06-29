@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClientFromRequest } from '@/lib/supabase-server'
-import { anthropic, MODEL } from '@/lib/anthropic'
+import { generateRoadmapPlan } from '@/lib/generate'
 
 export async function POST(req: Request) {
   try {
@@ -11,35 +11,9 @@ export async function POST(req: Request) {
     const { topic, difficulty } = await req.json()
     if (!topic) return NextResponse.json({ error: 'Topic required' }, { status: 400 })
 
-    const msg = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 2000,
-      messages: [{
-        role: 'user',
-        content: `Create a comprehensive learning roadmap for "${topic}" at ${difficulty} level.
-Return ONLY valid JSON matching this exact structure:
-{
-  "title": "string (concise roadmap title)",
-  "description": "string (2-3 sentence overview)",
-  "estimatedHours": number,
-  "sections": [
-    {
-      "index": 0,
-      "title": "string",
-      "description": "string (what this section covers)",
-      "topics": ["topic1", "topic2", "topic3"],
-      "estimatedMinutes": number
-    }
-  ]
-}
-Create exactly 8 sections. Make it practical and progressive. No markdown, just JSON.`
-      }]
-    })
-
-    const text = msg.content[0].type === 'text' ? msg.content[0].text : ''
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) throw new Error('Failed to parse AI response')
-    const roadmapData = JSON.parse(jsonMatch[0])
+    // Cheap step: just the course outline. The full content (lessons, quizzes,
+    // assignments) is generated all-at-once afterwards by /api/roadmap/build.
+    const roadmapData = await generateRoadmapPlan(topic, difficulty)
 
     const { data: roadmap, error } = await supabase
       .from('roadmaps')
@@ -52,12 +26,14 @@ Create exactly 8 sections. Make it practical and progressive. No markdown, just 
         estimated_hours: roadmapData.estimatedHours ?? 10,
         sections: roadmapData.sections,
         status: 'active',
+        generation_status: 'generating',
       })
       .select()
       .single()
 
     if (error) throw error
 
+    // Create lessons for each section
     const lessonInserts = roadmapData.sections.map((s: { index: number; title: string }, i: number) => ({
       roadmap_id: roadmap.id,
       user_id: user.id,
@@ -68,6 +44,7 @@ Create exactly 8 sections. Make it practical and progressive. No markdown, just 
 
     await supabase.from('lessons').insert(lessonInserts)
 
+    // Generate knowledge graph
     await generateKnowledgeGraph(supabase, user.id, roadmap.id, roadmapData, topic)
 
     return NextResponse.json({ id: roadmap.id })
@@ -86,6 +63,7 @@ async function generateKnowledgeGraph(
 ) {
   try {
     const nodes: Array<{ user_id: string; roadmap_id: string; label: string; node_type: 'topic' | 'concept' | 'skill'; position: { x: number; y: number }; mastery_level: number }> = []
+    // Root node
     nodes.push({
       user_id: userId,
       roadmap_id: roadmapId,
@@ -126,6 +104,7 @@ async function generateKnowledgeGraph(
 
     if (!insertedNodes || insertedNodes.length === 0) return
 
+    // Create edges: root → sections, sections → their skills
     const rootNode = insertedNodes[0]
     const sectionNodes = insertedNodes.slice(1).filter(n => n.node_type === 'concept')
     const skillNodes = insertedNodes.filter(n => n.node_type === 'skill')
@@ -137,7 +116,7 @@ async function generateKnowledgeGraph(
         return parentSection
           ? { user_id: userId, roadmap_id: roadmapId, source_id: parentSection.id, target_id: sk.id }
           : null
-      }).filter((e): e is { user_id: string; roadmap_id: string; source_id: string; target_id: string } => e !== null)
+      }).filter(Boolean) as Array<{ user_id: string; roadmap_id: string; source_id: string; target_id: string }>
     ]
 
     if (edges.length > 0) {

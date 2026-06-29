@@ -33,7 +33,7 @@ export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to create roadmap')
       onClose()
-      router.push(`/learn/${data.id}`)
+      router.push(`/learn/${data.id}/build`)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')

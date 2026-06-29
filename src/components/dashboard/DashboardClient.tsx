@@ -50,7 +50,7 @@ export default function DashboardClient({ profile, roadmaps, activity }: Props) 
       {/* Header with Finn the Fox */}
       <div className="flex items-center justify-between mb-8 pt-2">
         <div className="flex items-center gap-3">
-          <Mascot who="fox" size={52} halo />
+          <Mascot who="fox" size={52} halo pose="wave" />
           <div>
             <p className="text-ink-soft text-sm">{getGreeting()},</p>
             <h1 className="text-2xl font-bold text-ink tracking-tight">

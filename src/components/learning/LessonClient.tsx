@@ -256,7 +256,7 @@ function LessonContent({ lesson, roadmapId }: { lesson: Lesson; roadmapId: strin
   if (done) {
     return (
       <div className="flex flex-col items-center justify-center h-full py-20 gap-5 text-center px-6 bg-surface">
-        <Mascot who="owl" size={88} halo />
+        <Mascot who="owl" size={96} aura pose="cheer" />
         <h2 className="text-2xl font-bold text-ink">Lesson complete</h2>
         <p className="text-ink-soft">You earned <span className="font-bold" style={{ color: owl.accent }}>+{xpEarned} XP</span></p>
         <button onClick={() => router.push(`/learn/${roadmapId}`)} className="text-white px-6 py-3 rounded-xl font-bold text-sm transition-transform hover:-translate-y-0.5" style={{ background: owl.accent }}>
@@ -331,7 +331,7 @@ function QuizSection({ lessonId, existingQuiz }: { lessonId: string; existingQui
     return (
       <div>
         <div className="p-6 rounded-2xl border mb-6 text-center" style={{ background: `${tone}14`, borderColor: `${tone}33` }}>
-          <Mascot who="cat" size={56} className="mx-auto mb-2" animate={pct >= 80} />
+          <Mascot who="cat" size={64} className="mx-auto mb-2" pose={pct >= 80 ? 'cheer' : pct >= 60 ? 'idle' : 'sad'} />
           <div className="text-4xl font-bold mb-1" style={{ color: tone }}>{result.score}/{result.maxScore}</div>
           <div className="text-sm font-medium" style={{ color: tone }}>{pct}% — {label}</div>
         </div>

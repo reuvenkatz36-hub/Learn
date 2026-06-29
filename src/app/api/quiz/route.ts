@@ -99,8 +99,10 @@ export async function PATCH(req: Request) {
     submitted_at: new Date().toISOString(),
   }).eq('id', quizId)
 
+  // Award XP
   await awardXP(supabase, user.id, xpEarned, 0, 1)
 
+  // If perfect or near-perfect, unlock next lesson
   if (score >= questions.length * 0.6) {
     await unlockNextLesson(supabase, user.id, lessonId)
   }
@@ -128,6 +130,7 @@ async function awardXP(
     ignoreDuplicates: false,
   })
 
+  // Update total XP
   const { data: profile } = await supabase.from('profiles').select('total_xp').eq('id', userId).single()
   if (profile) {
     await supabase.from('profiles').update({ total_xp: (profile.total_xp ?? 0) + xp }).eq('id', userId)

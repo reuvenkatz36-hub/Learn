@@ -41,6 +41,15 @@ const config: Config = {
       animation: {
         "crew-bob": "crew-bob 3.2s ease-in-out infinite",
       },
+      boxShadow: {
+        soft: "0 1px 2px rgba(28,27,26,0.04), 0 6px 16px -6px rgba(28,27,26,0.10)",
+        lift: "0 2px 4px rgba(28,27,26,0.05), 0 14px 30px -10px rgba(28,27,26,0.16)",
+      },
+      backgroundImage: {
+        // Regal brand gradient for Principal Hoot / logo / hero moments
+        "brand-regal": "linear-gradient(135deg, #4F46E5 0%, #6D28D9 60%, #E9B84A 140%)",
+        "hero-glow": "radial-gradient(60% 50% at 50% 35%, rgba(79,70,229,0.10), transparent 70%)",
+      },
       typography: {
         invert: {
           css: {

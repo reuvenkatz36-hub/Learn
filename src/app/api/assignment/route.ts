@@ -76,6 +76,7 @@ export async function PATCH(req: Request) {
 
   const lesson = assignmentRow.lessons
 
+  // Stream AI feedback
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
@@ -110,6 +111,7 @@ Format your response as clear paragraphs, not JSON.`
           }
         }
 
+        // Extract score from feedback
         const scoreMatch = fullFeedback.match(/\b(\d{1,3})\s*(?:\/\s*100|out of 100)/i)
         const score = scoreMatch ? Math.min(100, parseInt(scoreMatch[1])) : 75
 
@@ -121,6 +123,7 @@ Format your response as clear paragraphs, not JSON.`
           submitted_at: new Date().toISOString(),
         }).eq('id', assignmentId)
 
+        // Award XP
         const today = new Date().toISOString().split('T')[0]
         await supabase.from('daily_activity').upsert({
           user_id: user.id,
