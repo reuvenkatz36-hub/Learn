@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
+import { recordLevelUp } from '@/lib/rewards'
 
 export async function POST(req: Request) {
   const supabase = await createServerClient()
@@ -41,24 +42,29 @@ export async function POST(req: Request) {
   // 3. Add XP to profile + update streak
   const { data: profile } = await supabase
     .from('profiles')
-    .select('total_xp, streak_count, last_active_date')
+    .select('total_xp, streak_count, last_activity_date')
     .eq('id', user.id)
     .single()
 
+  let levelUp: { level: number } | null = null
   if (profile) {
-    const lastActive = profile.last_active_date
+    const lastActive = profile.last_activity_date
     const isNewDay = lastActive !== today
     const isConsecutive = lastActive === new Date(Date.now() - 86400000).toISOString().split('T')[0]
     const newStreak = isNewDay ? (isConsecutive ? (profile.streak_count ?? 0) + 1 : 1) : (profile.streak_count ?? 0)
 
+    const oldXp = profile.total_xp ?? 0
+    const newXp = oldXp + xp
     await supabase
       .from('profiles')
       .update({
-        total_xp: (profile.total_xp ?? 0) + xp,
+        total_xp: newXp,
         streak_count: newStreak,
-        last_active_date: today,
+        last_activity_date: today,
       })
       .eq('id', user.id)
+
+    levelUp = await recordLevelUp(supabase, user.id, oldXp, newXp)
   }
 
   // 4. Upsert daily activity
@@ -83,5 +89,15 @@ export async function POST(req: Request) {
       .insert({ user_id: user.id, activity_date: today, lessons_completed: 1, xp_earned: xp })
   }
 
-  return NextResponse.json({ ok: true, xpEarned: xp })
+  // Did this completion finish the whole course? (drives the certificate)
+  const { data: remaining } = await supabase
+    .from('lessons')
+    .select('id')
+    .eq('roadmap_id', lesson.roadmap_id)
+    .eq('user_id', user.id)
+    .neq('status', 'completed')
+    .limit(1)
+  const courseComplete = (remaining?.length ?? 1) === 0
+
+  return NextResponse.json({ ok: true, xpEarned: xp, levelUp, courseComplete })
 }

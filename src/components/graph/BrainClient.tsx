@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import Mascot from '@/components/crew/Mascot'
 import { CREW } from '@/lib/crew'
+import { useLang } from '@/lib/useLang'
 
 const memo = CREW.elephant
 
@@ -52,6 +53,7 @@ function insideBrain(x: number, y: number) {
 interface Neuron { x: number; y: number }
 
 export default function BrainClient({ courses }: Props) {
+  const { t } = useLang()
   const [activeCourse, setActiveCourse] = useState<string | null>(null)
 
   // Flatten lessons in course order; each gets a color from its course.
@@ -113,8 +115,8 @@ export default function BrainClient({ courses }: Props) {
         <div className="flex items-start gap-3 mb-6">
           <Mascot who="elephant" size={48} halo />
           <div>
-            <h1 className="text-2xl font-bold text-ink tracking-tight">Your Brain</h1>
-            <p className="text-ink-soft text-sm">{memo.name} lights up a neuron for every lesson you finish.</p>
+            <h1 className="text-2xl font-bold text-ink tracking-tight">{t('brain.title')}</h1>
+            <p className="text-ink-soft text-sm">{memo.name} {t('brain.subtitle')}</p>
           </div>
         </div>
 
@@ -122,17 +124,17 @@ export default function BrainClient({ courses }: Props) {
         <div className="flex items-center gap-6 mb-6 p-5 bg-surface border border-line rounded-2xl">
           <div>
             <div className="text-2xl font-bold text-ink tabular-nums">{fillPct}%</div>
-            <div className="text-xs text-ink-soft mt-0.5">brain lit up</div>
+            <div className="text-xs text-ink-soft mt-0.5">{t('brain.lit')}</div>
           </div>
           <div className="w-px h-8 bg-line" />
           <div>
             <div className="text-2xl font-bold text-ink tabular-nums">{litCount}</div>
-            <div className="text-xs text-ink-soft mt-0.5">neurons fired</div>
+            <div className="text-xs text-ink-soft mt-0.5">{t('brain.fired')}</div>
           </div>
           <div className="w-px h-8 bg-line" />
           <div>
             <div className="text-2xl font-bold text-ink tabular-nums">{totalCount - litCount}</div>
-            <div className="text-xs text-ink-soft mt-0.5">still to learn</div>
+            <div className="text-xs text-ink-soft mt-0.5">{t('brain.toLearn')}</div>
           </div>
         </div>
 
@@ -211,7 +213,7 @@ export default function BrainClient({ courses }: Props) {
 
           {totalCount === 0 && (
             <p className="text-center text-ink-soft text-sm mt-2">
-              Your brain is empty. Finish a lesson and watch the first neuron light up.
+              {t('brain.empty')}
             </p>
           )}
         </div>

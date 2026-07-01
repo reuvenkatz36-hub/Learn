@@ -17,16 +17,20 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { roadmapId } = await req.json()
+  const { roadmapId, language: bodyLanguage } = await req.json()
 
   const { data: roadmap } = await supabase
     .from('roadmaps')
-    .select('id, topic, title, difficulty')
+    .select('*')
     .eq('id', roadmapId)
     .eq('user_id', user.id)
     .single()
 
   if (!roadmap) return NextResponse.json({ error: 'Roadmap not found' }, { status: 404 })
+
+  // Course language: stored on the roadmap when the migration ran, otherwise
+  // whatever the client says the UI language is right now.
+  const language = ((roadmap as { language?: string }).language ?? bodyLanguage) === 'he' ? 'he' as const : 'en' as const
 
   const { data: lessons } = await supabase
     .from('lessons')
@@ -60,6 +64,7 @@ export async function POST(req: Request) {
                     difficulty: roadmap.difficulty,
                     lessonTitle: lesson.title,
                     sectionIndex: lesson.section_index,
+                    language,
                   })
               await supabase.from('lessons').update({ content: sections }).eq('id', lesson.id)
               lessonsDone++
@@ -86,6 +91,7 @@ export async function POST(req: Request) {
                 const questions = await generateQuiz({
                   lessonTitle: lesson.title,
                   contentSummary: summarizeContent(sections),
+                  language,
                 })
                 await supabase.from('quizzes').insert({
                   lesson_id: lesson.id,
@@ -102,17 +108,28 @@ export async function POST(req: Request) {
             })(),
             (async () => {
               try {
-                const prompt = await generateAssignmentPrompt({
+                const { prompt, inputTypes } = await generateAssignmentPrompt({
                   lessonTitle: lesson.title,
                   topic: roadmap.topic,
                   difficulty: roadmap.difficulty,
+                  language,
                 })
-                await supabase.from('assignments').insert({
+                // input_types is a post-migration column — retry without it.
+                const { error } = await supabase.from('assignments').insert({
                   lesson_id: lesson.id,
                   user_id: user.id,
                   prompt,
                   status: 'pending',
+                  input_types: inputTypes,
                 })
+                if (error) {
+                  await supabase.from('assignments').insert({
+                    lesson_id: lesson.id,
+                    user_id: user.id,
+                    prompt,
+                    status: 'pending',
+                  })
+                }
               } catch (err) {
                 console.error('Assignment gen failed (non-fatal):', lesson.id, err)
               } finally {

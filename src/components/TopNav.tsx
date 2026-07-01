@@ -1,25 +1,28 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, BookOpen, MessageSquare, Brain, User, LogOut, Zap } from 'lucide-react'
+import { LayoutDashboard, BookOpen, MessageSquare, Brain, User, LogOut, Zap, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CREW, type CrewId } from '@/lib/crew'
 import { supabase } from '@/lib/supabase'
 import { Profile } from '@/types/database'
 import Mascot from '@/components/crew/Mascot'
 import SoundToggle from '@/components/SoundToggle'
+import { useLang } from '@/lib/useLang'
+import type { TKey } from '@/lib/i18n'
 
-const nav: { href: string; icon: typeof BookOpen; label: string; who: CrewId }[] = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Home', who: 'fox' },
-  { href: '/learn', icon: BookOpen, label: 'Learn', who: 'owl' },
-  { href: '/chat', icon: MessageSquare, label: 'Coach', who: 'dog' },
-  { href: '/graph', icon: Brain, label: 'Brain', who: 'elephant' },
-  { href: '/profile', icon: User, label: 'Profile', who: 'fox' },
+const nav: { href: string; icon: typeof BookOpen; labelKey: TKey; who: CrewId }[] = [
+  { href: '/dashboard', icon: LayoutDashboard, labelKey: 'nav.home', who: 'fox' },
+  { href: '/learn', icon: BookOpen, labelKey: 'nav.learn', who: 'owl' },
+  { href: '/chat', icon: MessageSquare, labelKey: 'nav.coach', who: 'dog' },
+  { href: '/graph', icon: Brain, labelKey: 'nav.brain', who: 'elephant' },
+  { href: '/profile', icon: User, labelKey: 'nav.profile', who: 'fox' },
 ]
 
 export default function TopNav({ profile }: { profile: Profile | null }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { t } = useLang()
 
   const signOut = async () => {
     await supabase.auth.signOut()
@@ -29,7 +32,7 @@ export default function TopNav({ profile }: { profile: Profile | null }) {
 
   const links = (
     <>
-      {nav.map(({ href, icon: Icon, label, who }) => {
+      {nav.map(({ href, icon: Icon, labelKey, who }) => {
         const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
         const accent = CREW[who].accent
         return (
@@ -43,7 +46,7 @@ export default function TopNav({ profile }: { profile: Profile | null }) {
             style={{ color: active ? accent : '#6B6864' }}
           >
             <Icon className="w-4 h-4" />
-            {label}
+            {t(labelKey)}
           </Link>
         )
       })}
@@ -57,7 +60,7 @@ export default function TopNav({ profile }: { profile: Profile | null }) {
           {/* Brand */}
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
             <Mascot who="fox" size={30} animate={false} />
-            <span className="font-bold text-ink text-lg tracking-tight">Mastery</span>
+            <span className="font-bold text-ink text-lg tracking-tight">Zendric</span>
           </Link>
 
           {/* Desktop nav */}
@@ -66,16 +69,24 @@ export default function TopNav({ profile }: { profile: Profile | null }) {
           {/* Right cluster */}
           <div className="flex items-center gap-1.5 shrink-0">
             <SoundToggle />
+            <Link
+              href="/settings"
+              aria-label={t('nav.settings')}
+              title={t('nav.settings')}
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-ink-soft hover:text-ink hover:bg-paper transition-colors"
+            >
+              <Settings className="w-[18px] h-[18px]" />
+            </Link>
             <span className="hidden sm:flex items-center gap-1 text-sm font-bold tabular-nums px-2.5 py-1 rounded-lg bg-paper" style={{ color: CREW.fox.accent }}>
               <Zap className="w-3.5 h-3.5" /> {(profile?.total_xp ?? 0).toLocaleString()}
             </span>
             <button
               onClick={signOut}
-              aria-label="Sign out"
-              title="Sign out"
+              aria-label={t('nav.signout')}
+              title={t('nav.signout')}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-ink-soft hover:text-ink hover:bg-paper transition-colors"
             >
-              <LogOut className="w-[18px] h-[18px]" />
+              <LogOut className="w-[18px] h-[18px] rtl:-scale-x-100" />
             </button>
           </div>
         </div>

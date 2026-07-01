@@ -8,28 +8,37 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { topic, difficulty } = await req.json()
+    const { topic, difficulty, language } = await req.json()
     if (!topic) return NextResponse.json({ error: 'Topic required' }, { status: 400 })
 
     // Cheap step: just the course outline. The full content (lessons, quizzes,
     // assignments) is generated all-at-once afterwards by /api/roadmap/build.
-    const roadmapData = await generateRoadmapPlan(topic, difficulty)
+    const roadmapData = await generateRoadmapPlan(topic, difficulty, language)
 
-    const { data: roadmap, error } = await supabase
+    const baseInsert = {
+      user_id: user.id,
+      title: roadmapData.title,
+      description: roadmapData.description,
+      topic,
+      difficulty,
+      estimated_hours: roadmapData.estimatedHours ?? 10,
+      sections: roadmapData.sections,
+      status: 'active',
+      generation_status: 'generating',
+    }
+    // language is a post-migration column — retry without it on older schemas.
+    let { data: roadmap, error } = await supabase
       .from('roadmaps')
-      .insert({
-        user_id: user.id,
-        title: roadmapData.title,
-        description: roadmapData.description,
-        topic,
-        difficulty,
-        estimated_hours: roadmapData.estimatedHours ?? 10,
-        sections: roadmapData.sections,
-        status: 'active',
-        generation_status: 'generating',
-      })
+      .insert({ ...baseInsert, language: language === 'he' ? 'he' : 'en' })
       .select()
       .single()
+    if (error) {
+      ;({ data: roadmap, error } = await supabase
+        .from('roadmaps')
+        .insert(baseInsert)
+        .select()
+        .single())
+    }
 
     if (error) throw error
 

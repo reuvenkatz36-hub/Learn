@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createClientFromRequest } from '@/lib/supabase-server'
 import { anthropic, MODEL } from '@/lib/anthropic'
+import { languageDirective } from '@/lib/generate'
 
 export async function POST(req: Request) {
   const supabase = await createClientFromRequest(req)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { message, roadmapId, history } = await req.json()
+  const { message, roadmapId, history, language } = await req.json()
 
   // Get roadmap context if provided
   let context = ''
@@ -50,7 +51,7 @@ Your role is to:
 - Encourage and motivate the student
 - Break down complex topics into digestible parts
 - Suggest what to study next when appropriate
-Be warm, encouraging, and educational.`,
+Be warm, encouraging, and educational.${languageDirective(language)}`,
           messages,
         })
 

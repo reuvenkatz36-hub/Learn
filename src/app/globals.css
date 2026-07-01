@@ -16,6 +16,20 @@ body {
   background: var(--background);
 }
 
+/* Hebrew: swap in a quality Hebrew sans for UI text; the serif reader font
+   pairing (Frank Ruhl Libre) is applied by the reader itself. */
+html[lang='he'] body {
+  font-family: 'Noto Sans Hebrew', 'Segoe UI', Arial, sans-serif;
+}
+
+/* Lesson reader typography — serif in both languages. */
+.reader-serif {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+html[lang='he'] .reader-serif {
+  font-family: 'Frank Ruhl Libre', Georgia, serif;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -104,6 +118,16 @@ body {
   border-bottom: 1px solid var(--line, #ECEAE4);
   border-right: 1px solid var(--line, #ECEAE4);
   transform: rotate(45deg);
+}
+
+/* Level-up confetti */
+@keyframes confetti-fall {
+  0% { top: -8%; transform: rotate(0deg) scale(1); opacity: 1; }
+  100% { top: 105%; transform: rotate(320deg) scale(0.7); opacity: 0.4; }
+}
+.animate-confetti {
+  top: -8%;
+  animation: confetti-fall 2.4s ease-in infinite;
 }
 
 /* Brain neuron pulse */

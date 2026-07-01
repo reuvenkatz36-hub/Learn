@@ -8,6 +8,7 @@ import ImportModal from '@/components/dashboard/ImportModal'
 import WelcomeModal from '@/components/dashboard/WelcomeModal'
 import Mascot from '@/components/crew/Mascot'
 import { CREW } from '@/lib/crew'
+import { useLang } from '@/lib/useLang'
 
 const TOPICS = [
   'Machine Learning', 'Personal Finance', 'Python Programming',
@@ -16,11 +17,11 @@ const TOPICS = [
   'React & Next.js', 'Guitar', 'Mathematics',
 ]
 
-function getGreeting() {
+function greetingKey() {
   const h = new Date().getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 17) return 'Good afternoon'
-  return 'Good evening'
+  if (h < 12) return 'dash.morning' as const
+  if (h < 17) return 'dash.afternoon' as const
+  return 'dash.evening' as const
 }
 
 interface Props {
@@ -34,6 +35,7 @@ const fox = CREW.fox
 const owl = CREW.owl
 
 export default function DashboardClient({ profile, roadmaps, activity, progress }: Props) {
+  const { t } = useLang()
   const [showNewRoadmap, setShowNewRoadmap] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [suggestedTopic, setSuggestedTopic] = useState<string | undefined>()
@@ -55,9 +57,9 @@ export default function DashboardClient({ profile, roadmaps, activity, progress 
         <div className="flex items-center gap-3">
           <Mascot who="fox" size={52} halo pose="wave" />
           <div>
-            <p className="text-ink-soft text-sm">{getGreeting()},</p>
+            <p className="text-ink-soft text-sm">{t(greetingKey())},</p>
             <h1 className="text-2xl font-bold text-ink tracking-tight">
-              {profile?.display_name ?? 'Learner'}
+              {profile?.display_name ?? t('dash.learner')}
             </h1>
           </div>
         </div>
@@ -67,7 +69,7 @@ export default function DashboardClient({ profile, roadmaps, activity, progress 
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold border border-line bg-surface text-ink-soft hover:text-ink hover:shadow-sm transition-all"
           >
             <Upload className="w-3.5 h-3.5" />
-            Import
+            {t('dash.import')}
           </button>
           <button
             onClick={() => setShowNewRoadmap(true)}
@@ -75,7 +77,7 @@ export default function DashboardClient({ profile, roadmaps, activity, progress 
             style={{ background: fox.accent }}
           >
             <Plus className="w-3.5 h-3.5" />
-            New
+            {t('dash.new')}
           </button>
         </div>
       </div>
@@ -85,21 +87,21 @@ export default function DashboardClient({ profile, roadmaps, activity, progress 
         <div>
           <div className="text-2xl font-bold text-ink tabular-nums">{(profile?.total_xp ?? 0).toLocaleString()}</div>
           <div className="text-xs text-ink-soft mt-0.5 flex items-center gap-1">
-            <Zap className="w-3 h-3" style={{ color: fox.accent }} /> XP earned
+            <Zap className="w-3 h-3" style={{ color: fox.accent }} /> {t('dash.xp')}
           </div>
         </div>
         <div className="w-px h-8 bg-line" />
         <div>
           <div className="text-2xl font-bold text-ink tabular-nums">{profile?.streak_count ?? 0}</div>
           <div className="text-xs text-ink-soft mt-0.5 flex items-center gap-1">
-            <Flame className="w-3 h-3 text-orange-500" /> day streak
+            <Flame className="w-3 h-3 text-orange-500" /> {t('dash.streak')}
           </div>
         </div>
         <div className="w-px h-8 bg-line" />
         <div>
           <div className="text-2xl font-bold text-ink tabular-nums">{totalLessons}</div>
           <div className="text-xs text-ink-soft mt-0.5 flex items-center gap-1">
-            <BookOpen className="w-3 h-3 text-ink-faint" /> lessons done
+            <BookOpen className="w-3 h-3 text-ink-faint" /> {t('dash.lessonsDone')}
           </div>
         </div>
       </div>
@@ -107,10 +109,10 @@ export default function DashboardClient({ profile, roadmaps, activity, progress 
       {/* Courses */}
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xs font-bold text-ink-faint uppercase tracking-widest">Your Courses</h2>
+          <h2 className="text-xs font-bold text-ink-faint uppercase tracking-widest">{t('dash.yourCourses')}</h2>
           {roadmaps.length > 0 && (
             <Link href="/learn" className="text-xs text-ink-soft hover:text-ink flex items-center gap-0.5 transition-colors">
-              View all <ChevronRight className="w-3 h-3" />
+              {t('dash.viewAll')} <ChevronRight className="w-3 h-3 rtl:-scale-x-100" />
             </Link>
           )}
         </div>
@@ -118,14 +120,14 @@ export default function DashboardClient({ profile, roadmaps, activity, progress 
         {roadmaps.length === 0 ? (
           <div className="bg-surface border border-line rounded-2xl p-8 text-center">
             <Mascot who="owl" size={64} className="mx-auto mb-3" />
-            <p className="text-ink font-semibold mb-1">{owl.name} is ready when you are</p>
-            <p className="text-ink-soft text-sm mb-6">Generate your first course to get started</p>
+            <p className="text-ink font-semibold mb-1">{owl.name} {t('dash.emptyTitle')}</p>
+            <p className="text-ink-soft text-sm mb-6">{t('dash.emptyBody')}</p>
             <button
               onClick={() => setShowNewRoadmap(true)}
               className="text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-transform hover:-translate-y-0.5"
               style={{ background: fox.accent }}
             >
-              Create your first course
+              {t('dash.createFirst')}
             </button>
           </div>
         ) : (
@@ -149,7 +151,7 @@ export default function DashboardClient({ profile, roadmaps, activity, progress 
                       >
                         {roadmap.difficulty}
                       </span>
-                      <span className="text-ink-faint text-[10px]">{total} lessons</span>
+                      <span className="text-ink-faint text-[10px]">{total} {t('dash.lessons')}</span>
                     </div>
                     <h3 className="font-semibold text-ink text-sm truncate mb-2.5">
                       {roadmap.title}
@@ -161,7 +163,7 @@ export default function DashboardClient({ profile, roadmaps, activity, progress 
                       <span className="text-[10px] text-ink-soft tabular-nums w-6 text-right">{pct}%</span>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-ink-faint group-hover:text-ink flex-shrink-0 transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-ink-faint group-hover:text-ink flex-shrink-0 transition-colors rtl:-scale-x-100" />
                 </Link>
               )
             })}
@@ -171,7 +173,7 @@ export default function DashboardClient({ profile, roadmaps, activity, progress 
 
       {/* Explore */}
       <div>
-        <h2 className="text-xs font-bold text-ink-faint uppercase tracking-widest mb-4">Explore Topics</h2>
+        <h2 className="text-xs font-bold text-ink-faint uppercase tracking-widest mb-4">{t('dash.explore')}</h2>
         <div className="grid grid-cols-2 gap-2.5">
           {TOPICS.map(topic => (
             <button

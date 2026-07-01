@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { X, Loader2, Sparkles } from 'lucide-react'
 import Mascot from '@/components/crew/Mascot'
 import { CREW } from '@/lib/crew'
+import { useLang } from '@/lib/useLang'
 
 const owl = CREW.owl
 
@@ -14,6 +15,7 @@ interface Props {
 
 export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
   const router = useRouter()
+  const { t, lang } = useLang()
   const [topic, setTopic] = useState(initialTopic ?? '')
   const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner')
   const [loading, setLoading] = useState(false)
@@ -28,7 +30,7 @@ export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
       const res = await fetch('/api/roadmap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: topic.trim(), difficulty }),
+        body: JSON.stringify({ topic: topic.trim(), difficulty, language: lang }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to create roadmap')
@@ -48,8 +50,8 @@ export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
           <div className="flex items-center gap-3">
             <Mascot who="owl" size={40} animate={false} />
             <div>
-              <h2 className="font-bold text-ink leading-tight">New Course</h2>
-              <p className="text-xs text-ink-soft">{owl.name} will build it for you</p>
+              <h2 className="font-bold text-ink leading-tight">{t('modal.newCourse')}</h2>
+              <p className="text-xs text-ink-soft">{owl.name} {t('modal.willBuild')}</p>
             </div>
           </div>
           <button onClick={onClose} className="text-ink-faint hover:text-ink transition-colors">
@@ -60,13 +62,13 @@ export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-ink-soft uppercase tracking-wider mb-2">
-              What do you want to learn?
+              {t('modal.whatLearn')}
             </label>
             <input
               type="text"
               value={topic}
               onChange={e => setTopic(e.target.value)}
-              placeholder="e.g. Machine Learning, TypeScript, Guitar..."
+              placeholder={t('modal.topicPlaceholder')}
               className="w-full bg-paper border border-line rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 transition-all"
               style={{ ['--tw-ring-color' as string]: owl.accent }}
               autoFocus
@@ -75,7 +77,7 @@ export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
 
           <div>
             <label className="block text-xs font-semibold text-ink-soft uppercase tracking-wider mb-2">
-              Difficulty
+              {t('modal.difficulty')}
             </label>
             <div className="grid grid-cols-3 gap-2">
               {(['beginner', 'intermediate', 'advanced'] as const).map(d => {
@@ -90,7 +92,7 @@ export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
                       ? { borderColor: owl.accent, background: owl.accentSoft, color: owl.accent }
                       : { borderColor: '#ECEAE4', color: '#6B6864' }}
                   >
-                    {d}
+                    {t(`modal.${d}`)}
                   </button>
                 )
               })}
@@ -110,9 +112,9 @@ export default function NewRoadmapModal({ onClose, initialTopic }: Props) {
             style={{ background: owl.accent }}
           >
             {loading ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> {t('modal.generating')}</>
             ) : (
-              <><Sparkles className="w-4 h-4" /> Generate Course</>
+              <><Sparkles className="w-4 h-4" /> {t('modal.generate')}</>
             )}
           </button>
         </form>

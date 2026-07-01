@@ -1,14 +1,17 @@
 import { createServerClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { ChevronRight } from 'lucide-react'
 import Mascot from '@/components/crew/Mascot'
 import { CREW } from '@/lib/crew'
 import { Roadmap } from '@/types/database'
+import { LANG_COOKIE, normalizeLang, makeT } from '@/lib/i18n'
 
 const owl = CREW.owl
 
 export default async function LearnPage() {
+  const t = makeT(normalizeLang(cookies().get(LANG_COOKIE)?.value))
   const supabase = await createServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -34,22 +37,22 @@ export default async function LearnPage() {
       <div className="flex items-center gap-3 mb-8 pt-2">
         <Mascot who="owl" size={48} halo />
         <div>
-          <h1 className="text-2xl font-bold text-ink">Your Courses</h1>
-          <p className="text-ink-soft text-sm">{owl.name} keeps your lessons in order · {roadmaps?.length ?? 0} course{roadmaps?.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-2xl font-bold text-ink">{t('learn.title')}</h1>
+          <p className="text-ink-soft text-sm">{owl.name} {t('learn.subtitle')} · {roadmaps?.length ?? 0} {roadmaps?.length !== 1 ? t('learn.courses') : t('learn.course')}</p>
         </div>
       </div>
 
       {!roadmaps?.length ? (
         <div className="bg-surface border border-line rounded-2xl p-10 text-center">
           <Mascot who="owl" size={64} className="mx-auto mb-3" />
-          <p className="text-ink font-semibold mb-1">No courses yet</p>
-          <p className="text-ink-soft text-sm mb-6">Head to your dashboard to create one</p>
+          <p className="text-ink font-semibold mb-1">{t('learn.empty')}</p>
+          <p className="text-ink-soft text-sm mb-6">{t('learn.emptyBody')}</p>
           <Link
             href="/dashboard"
             className="inline-flex text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-transform hover:-translate-y-0.5"
             style={{ background: owl.accent }}
           >
-            Go to Dashboard
+            {t('learn.goDash')}
           </Link>
         </div>
       ) : (
@@ -75,7 +78,7 @@ export default async function LearnPage() {
                     >
                       {roadmap.difficulty}
                     </span>
-                    <span className="text-ink-faint text-[10px]">{total} lessons · {roadmap.estimated_hours}h</span>
+                    <span className="text-ink-faint text-[10px]">{total} {t('dash.lessons')} · {roadmap.estimated_hours}h</span>
                   </div>
                   <h3 className="font-semibold text-ink text-sm truncate mb-2.5">
                     {roadmap.title}
@@ -87,7 +90,7 @@ export default async function LearnPage() {
                     <span className="text-[10px] text-ink-soft tabular-nums">{completedSections}/{total}</span>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-ink-faint group-hover:text-ink flex-shrink-0 transition-colors" />
+                <ChevronRight className="w-4 h-4 text-ink-faint group-hover:text-ink flex-shrink-0 transition-colors rtl:-scale-x-100" />
               </Link>
             )
           })}

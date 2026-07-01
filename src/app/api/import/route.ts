@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { text, pdfBase64 } = await req.json()
+    const { text, pdfBase64, language } = await req.json()
 
     const trimmedText = typeof text === 'string' ? text.trim() : ''
     if (!pdfBase64 && trimmedText.length < 40) {
@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     const imported = await generateLessonFromSource({
       text: trimmedText || undefined,
       pdfBase64: typeof pdfBase64 === 'string' ? pdfBase64 : undefined,
+      language: language === 'he' ? 'he' : 'en',
     })
 
     // One roadmap = one imported reading. Reuse the existing schema so the reader,

@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server'
 import { createClientFromRequest } from '@/lib/supabase-server'
 import { anthropic, MODEL } from '@/lib/anthropic'
+import { languageDirective, generateStoryVersion, type ContentLanguage, type LessonContentSection } from '@/lib/generate'
 
 export async function POST(req: Request) {
   const supabase = await createClientFromRequest(req)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { lessonId } = await req.json()
+  const { lessonId, language, mode } = await req.json() as {
+    lessonId: string
+    language?: ContentLanguage
+    mode?: 'standard' | 'story'
+  }
 
   const { data: lesson } = await supabase
     .from('lessons')
@@ -18,7 +23,22 @@ export async function POST(req: Request) {
 
   if (!lesson) return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
 
-  const roadmap = lesson.roadmaps as { topic: string; title: string; difficulty: string } | null
+  const roadmap = lesson.roadmaps as { topic: string; title: string; difficulty: string; language?: string } | null
+  const lang: ContentLanguage = (roadmap?.language ?? language) === 'he' ? 'he' : 'en'
+
+  // Story Mode: retell the existing lesson content as a narrative. Non-streamed
+  // single response — the client caches it per lesson.
+  if (mode === 'story') {
+    const sections = Array.isArray(lesson.content) ? lesson.content as unknown as LessonContentSection[] : []
+    if (sections.length === 0) return NextResponse.json({ error: 'Lesson has no content yet' }, { status: 400 })
+    try {
+      const story = await generateStoryVersion({ lessonTitle: lesson.title, sections, language: lang })
+      return NextResponse.json({ sections: story })
+    } catch (err) {
+      console.error('Story generation failed:', err)
+      return NextResponse.json({ error: 'Failed to generate story' }, { status: 500 })
+    }
+  }
 
   // Return a streaming response
   const encoder = new TextEncoder()
@@ -47,7 +67,7 @@ Return ONLY valid JSON with exactly 8 sections:
   ]
 }
 
-Use varied section types. Make it engaging, practical, and educational. No markdown outside JSON strings.`
+Use varied section types. Make it engaging, practical, and educational. No markdown outside JSON strings.${languageDirective(lang)}`
           }]
         })
 

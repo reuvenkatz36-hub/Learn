@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
 import Mascot from '@/components/crew/Mascot'
 import { CREW } from '@/lib/crew'
+import { getClientLang } from '@/lib/useLang'
 
 const dog = CREW.dog
 
@@ -66,6 +67,7 @@ export default function ChatClient({ initialMessages, roadmaps }: Props) {
           message: userMsg,
           roadmapId: selectedRoadmap || undefined,
           history,
+          language: getClientLang(),
         }),
       })
 

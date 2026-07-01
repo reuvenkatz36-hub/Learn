@@ -24,7 +24,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Mascot who="owl" size={28} animate={false} />
-            <span className="font-bold tracking-tight text-lg">Mastery</span>
+            <span className="font-bold tracking-tight text-lg">Zendric</span>
           </div>
           <div className="flex items-center gap-1">
             <Link href="/auth/login" className="text-sm text-ink-soft hover:text-ink transition-colors px-4 py-2">
@@ -40,7 +40,7 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative pt-32 pb-16 px-6 text-center bg-hero-glow">
         <div className="max-w-3xl mx-auto">
-          {/* Principal Hoot — the face of Mastery */}
+          {/* Principal Hoot — the face of Zendric */}
           <div className="flex justify-center mb-5">
             <Mascot who="owl" size={132} aura />
           </div>
@@ -111,7 +111,7 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-line py-8 px-6 text-center text-ink-faint text-sm">
-        © 2026 Mastery
+        © 2026 Zendric
       </footer>
     </div>
   )

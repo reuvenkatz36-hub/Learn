@@ -1,24 +1,29 @@
 import { createServerClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { CheckCircle, Lock, ChevronRight, Clock, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Mascot from '@/components/crew/Mascot'
 import { CREW } from '@/lib/crew'
 import { RoadmapSection, Roadmap, Lesson } from '@/types/database'
+import { LANG_COOKIE, normalizeLang, makeT } from '@/lib/i18n'
+import CourseCompleteBanner from '@/components/certificate/CourseCompleteBanner'
 
 const owl = CREW.owl
 
 export default async function RoadmapPage({ params }: { params: Promise<{ roadmapId: string }> }) {
   const { roadmapId } = await params
+  const t = makeT(normalizeLang(cookies().get(LANG_COOKIE)?.value))
   const supabase = await createServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
   const userId = user!.id
 
-  const [{ data: rawRoadmap }, { data: rawLessons }] = await Promise.all([
+  const [{ data: rawRoadmap }, { data: rawLessons }, { data: profile }] = await Promise.all([
     supabase.from('roadmaps').select('*').eq('id', roadmapId).eq('user_id', userId).single(),
     supabase.from('lessons').select('*').eq('roadmap_id', roadmapId).eq('user_id', userId).order('section_index'),
+    supabase.from('profiles').select('display_name').eq('id', userId).single(),
   ])
 
   const roadmap = rawRoadmap as Roadmap | null
@@ -30,12 +35,23 @@ export default async function RoadmapPage({ params }: { params: Promise<{ roadma
   const completed = lessons?.filter(l => l.status === 'completed').length ?? 0
   const total = lessons?.length ?? 0
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0
+  const courseComplete = total > 0 && completed === total
 
   return (
     <div className="p-5 sm:p-8 max-w-2xl mx-auto">
       <Link href="/learn" className="inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-ink transition-colors mb-6">
-        <ArrowLeft className="w-3.5 h-3.5" /> Back
+        <ArrowLeft className="w-3.5 h-3.5 rtl:-scale-x-100" /> {t('learn.back')}
       </Link>
+
+      {courseComplete && (
+        <CourseCompleteBanner
+          userName={profile?.display_name ?? 'Learner'}
+          courseTitle={roadmap.title}
+          roadmapId={roadmapId}
+          lessons={total}
+          difficulty={roadmap.difficulty}
+        />
+      )}
 
       {/* Roadmap header */}
       <div className="mb-8">
@@ -49,7 +65,7 @@ export default async function RoadmapPage({ params }: { params: Promise<{ roadma
               {roadmap.difficulty}
             </span>
             <span className="text-ink-faint text-xs flex items-center gap-1">
-              <Clock className="w-3 h-3" /> {roadmap.estimated_hours}h estimated
+              <Clock className="w-3 h-3" /> {roadmap.estimated_hours}h {t('learn.estimated')}
             </span>
           </div>
         </div>
@@ -124,8 +140,8 @@ export default async function RoadmapPage({ params }: { params: Promise<{ roadma
                   className="flex items-center gap-1 text-white text-xs font-bold px-3 py-1.5 rounded-xl flex-shrink-0 transition-transform hover:-translate-y-0.5"
                   style={{ background: owl.accent }}
                 >
-                  {lesson.status === 'in_progress' ? 'Continue' : 'Start'}
-                  <ChevronRight className="w-3 h-3" />
+                  {lesson.status === 'in_progress' ? t('learn.continue') : t('learn.start')}
+                  <ChevronRight className="w-3 h-3 rtl:-scale-x-100" />
                 </Link>
               )}
             </div>

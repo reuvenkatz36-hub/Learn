@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { X, Loader2, Upload, FileText, Sparkles } from 'lucide-react'
 import Mascot from '@/components/crew/Mascot'
 import { CREW } from '@/lib/crew'
+import { useLang } from '@/lib/useLang'
 
 const owl = CREW.owl
 
@@ -29,6 +30,7 @@ function readAsBase64(file: File): Promise<string> {
 
 export default function ImportModal({ onClose }: Props) {
   const router = useRouter()
+  const { t, lang } = useLang()
   const [text, setText] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
@@ -52,8 +54,8 @@ export default function ImportModal({ onClose }: Props) {
     setError('')
     try {
       const body = file
-        ? { pdfBase64: await readAsBase64(file) }
-        : { text: text.trim() }
+        ? { pdfBase64: await readAsBase64(file), language: lang }
+        : { text: text.trim(), language: lang }
       const res = await fetch('/api/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -77,8 +79,8 @@ export default function ImportModal({ onClose }: Props) {
           <div className="flex items-center gap-3">
             <Mascot who="owl" size={40} animate={false} />
             <div>
-              <h2 className="font-bold text-ink leading-tight">Import a reading</h2>
-              <p className="text-xs text-ink-soft">{owl.name} turns it into a lesson + quiz</p>
+              <h2 className="font-bold text-ink leading-tight">{t('modal.importTitle')}</h2>
+              <p className="text-xs text-ink-soft">{owl.name} {t('modal.importSub')}</p>
             </div>
           </div>
           <button onClick={onClose} className="text-ink-faint hover:text-ink transition-colors">
@@ -90,7 +92,7 @@ export default function ImportModal({ onClose }: Props) {
           {/* PDF drop / picker */}
           <div>
             <label className="block text-xs font-semibold text-ink-soft uppercase tracking-wider mb-2">
-              Upload a PDF
+              {t('modal.uploadPdf')}
             </label>
             <input
               ref={fileInput}
@@ -121,7 +123,7 @@ export default function ImportModal({ onClose }: Props) {
               ) : (
                 <>
                   <Upload className="w-4 h-4 text-ink-faint flex-shrink-0" />
-                  <span className="text-sm text-ink-soft">Drop a PDF here or click to browse</span>
+                  <span className="text-sm text-ink-soft">{t('modal.dropPdf')}</span>
                 </>
               )}
             </button>
@@ -129,7 +131,7 @@ export default function ImportModal({ onClose }: Props) {
 
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-line" />
-            <span className="text-[10px] font-semibold text-ink-faint uppercase tracking-wider">or paste text</span>
+            <span className="text-[10px] font-semibold text-ink-faint uppercase tracking-wider">{t('modal.orPaste')}</span>
             <div className="flex-1 h-px bg-line" />
           </div>
 
@@ -140,7 +142,7 @@ export default function ImportModal({ onClose }: Props) {
               onChange={e => setText(e.target.value)}
               rows={6}
               disabled={!!file}
-              placeholder="Paste an article, notes, or any text you want to learn from..."
+              placeholder={t('modal.pastePlaceholder')}
               className="w-full bg-paper border border-line rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 transition-all resize-none disabled:opacity-40"
               style={{ ['--tw-ring-color' as string]: owl.accent }}
             />
@@ -159,9 +161,9 @@ export default function ImportModal({ onClose }: Props) {
             style={{ background: owl.accent }}
           >
             {loading ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Building your lesson...</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> {t('modal.building')}</>
             ) : (
-              <><Sparkles className="w-4 h-4" /> Create lesson</>
+              <><Sparkles className="w-4 h-4" /> {t('modal.createLesson')}</>
             )}
           </button>
         </form>

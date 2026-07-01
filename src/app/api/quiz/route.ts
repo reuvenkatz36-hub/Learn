@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createClientFromRequest } from '@/lib/supabase-server'
 import { anthropic, MODEL } from '@/lib/anthropic'
+import { languageDirective, type ContentLanguage } from '@/lib/generate'
+import { recordLevelUp, bumpDailyActivity } from '@/lib/rewards'
 
 export async function POST(req: Request) {
   const supabase = await createClientFromRequest(req)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { lessonId, action } = await req.json()
+  const { lessonId, action, language } = await req.json() as { lessonId: string; action: string; language?: ContentLanguage }
 
   if (action === 'generate') {
     const { data: lesson } = await supabase
@@ -43,7 +45,7 @@ Return ONLY valid JSON:
     }
   ]
 }
-Make questions test understanding, not just memorization.`
+Make questions test understanding, not just memorization.${languageDirective(language)}`
       }]
     })
 
@@ -99,42 +101,23 @@ export async function PATCH(req: Request) {
     submitted_at: new Date().toISOString(),
   }).eq('id', quizId)
 
-  // Award XP
-  await awardXP(supabase, user.id, xpEarned, 0, 1)
+  // Award XP: increment today's counters (upserting absolute values used to wipe
+  // the day's other activity), bump total XP, and detect level-ups.
+  await bumpDailyActivity(supabase, user.id, { xp: xpEarned, quizzes: 1 })
+  const { data: profile } = await supabase.from('profiles').select('total_xp').eq('id', user.id).single()
+  let levelUp = null
+  if (profile) {
+    const oldXp = profile.total_xp ?? 0
+    await supabase.from('profiles').update({ total_xp: oldXp + xpEarned }).eq('id', user.id)
+    levelUp = await recordLevelUp(supabase, user.id, oldXp, oldXp + xpEarned)
+  }
 
   // If perfect or near-perfect, unlock next lesson
   if (score >= questions.length * 0.6) {
     await unlockNextLesson(supabase, user.id, lessonId)
   }
 
-  return NextResponse.json({ score, maxScore: questions.length, xpEarned })
-}
-
-async function awardXP(
-  supabase: Awaited<ReturnType<typeof createClientFromRequest>>,
-  userId: string,
-  xp: number,
-  lessons: number,
-  quizzes: number
-) {
-  const today = new Date().toISOString().split('T')[0]
-
-  await supabase.from('daily_activity').upsert({
-    user_id: userId,
-    activity_date: today,
-    xp_earned: xp,
-    lessons_completed: lessons,
-    quizzes_taken: quizzes,
-  }, {
-    onConflict: 'user_id,activity_date',
-    ignoreDuplicates: false,
-  })
-
-  // Update total XP
-  const { data: profile } = await supabase.from('profiles').select('total_xp').eq('id', userId).single()
-  if (profile) {
-    await supabase.from('profiles').update({ total_xp: (profile.total_xp ?? 0) + xp }).eq('id', userId)
-  }
+  return NextResponse.json({ score, maxScore: questions.length, xpEarned, levelUp })
 }
 
 async function unlockNextLesson(
@@ -152,9 +135,12 @@ async function unlockNextLesson(
 
   await supabase.from('lessons').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', lessonId)
 
+  // Only unlock a lesson that is actually locked — never demote one the user
+  // already completed or started.
   await supabase.from('lessons')
     .update({ status: 'available' })
     .eq('roadmap_id', currentLesson.roadmap_id)
     .eq('user_id', userId)
     .eq('section_index', currentLesson.section_index + 1)
+    .eq('status', 'locked')
 }
