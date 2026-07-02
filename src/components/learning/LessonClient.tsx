@@ -105,12 +105,29 @@ function SpotifyReader({ lines, lessonId, autoScroll, focusLine, onFinish }: { l
 
   useEffect(() => { applyStyles(0) }, [lines.length, applyStyles])
 
-  // Listen sync: while narration is playing, the scroll follows the spoken
-  // line — the currently-read line glides into the center highlight.
+  // Listen sync: while narration is playing, the spoken line becomes the
+  // highlighted line IMMEDIATELY (not via scroll events — iOS Safari can drop
+  // programmatic smooth scrolls, which used to leave the highlight stuck at the
+  // top while the voice kept going), and the container scrolls to center it.
+  const focusRef = useRef<number | null>(null)
+  focusRef.current = focusLine ?? null
   useEffect(() => {
     if (focusLine == null) return
-    lineRefs.current[focusLine]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, [focusLine])
+    // 1. Light up the spoken line right now, in sync with the audio.
+    activeIdxRef.current = focusLine
+    applyStyles(focusLine)
+    // 2. Center it. scrollTo on the container is far more reliable on iOS than
+    //    scrollIntoView; fall back to an instant jump if smooth isn't supported.
+    const container = scrollRef.current
+    const el = lineRefs.current[focusLine]
+    if (!container || !el) return
+    const target = Math.max(0, el.offsetTop + el.offsetHeight / 2 - container.clientHeight / 2)
+    try {
+      container.scrollTo({ top: target, behavior: 'smooth' })
+    } catch {
+      container.scrollTop = target
+    }
+  }, [focusLine, applyStyles])
 
   // Auto-scroll: drift the container down slowly; any manual scroll still works
   // because we only add to scrollTop each frame. Paused while narration drives
@@ -155,6 +172,9 @@ function SpotifyReader({ lines, lessonId, autoScroll, focusLine, onFinish }: { l
         if (dist < closestDist) { closestDist = dist; closestIdx = i }
       })
       if (closestIdx !== activeIdxRef.current) {
+        // While narration is playing, the spoken line owns the highlight — don't
+        // let intermediate scroll positions (or tick sounds) fight the voice.
+        if (focusRef.current != null) return
         activeIdxRef.current = closestIdx
         applyStyles(closestIdx)
         playScrollTick()
