@@ -5,6 +5,9 @@ import { languageDirective, type ContentLanguage } from '@/lib/generate'
 import { recordLevelUp, bumpDailyActivity } from '@/lib/rewards'
 import type Anthropic from '@anthropic-ai/sdk'
 
+export const maxDuration = 120
+export const runtime = 'nodejs'
+
 export async function POST(req: Request) {
   const supabase = await createClientFromRequest(req)
   const { data: { user } } = await supabase.auth.getUser()

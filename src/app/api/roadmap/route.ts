@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClientFromRequest } from '@/lib/supabase-server'
 import { generateRoadmapPlan } from '@/lib/generate'
 
+export const maxDuration = 120
+export const runtime = 'nodejs'
+
 export async function POST(req: Request) {
   try {
     const supabase = await createClientFromRequest(req)

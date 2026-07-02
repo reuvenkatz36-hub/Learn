@@ -3,6 +3,9 @@ import { createClientFromRequest } from '@/lib/supabase-server'
 import { anthropic, MODEL } from '@/lib/anthropic'
 import { languageDirective, summarizeContent, type ContentLanguage } from '@/lib/generate'
 
+export const maxDuration = 60
+export const runtime = 'nodejs'
+
 // Floating help button: a free-form question answered in the context of the
 // lesson currently on screen. Streams the answer.
 export async function POST(req: Request) {

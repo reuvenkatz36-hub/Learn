@@ -3,6 +3,11 @@ import { createClientFromRequest } from '@/lib/supabase-server'
 import { anthropic, MODEL } from '@/lib/anthropic'
 import { languageDirective, generateStoryVersion, type ContentLanguage, type LessonContentSection } from '@/lib/generate'
 
+// AI generation (especially Story Mode) runs well past Vercel's default
+// function timeout — without this the story request is killed mid-generation.
+export const maxDuration = 300
+export const runtime = 'nodejs'
+
 export async function POST(req: Request) {
   const supabase = await createClientFromRequest(req)
   const { data: { user } } = await supabase.auth.getUser()

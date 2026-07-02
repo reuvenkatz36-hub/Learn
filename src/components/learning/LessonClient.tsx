@@ -60,7 +60,7 @@ function readingModePref(): ReadingMode {
 
 // ---------------------------------------------------------------- Spotify reader
 
-function SpotifyReader({ lines, lessonId, autoScroll, onFinish }: { lines: Line[]; lessonId: string; autoScroll: boolean; onFinish: () => void }) {
+function SpotifyReader({ lines, lessonId, autoScroll, focusLine, onFinish }: { lines: Line[]; lessonId: string; autoScroll: boolean; focusLine?: number | null; onFinish: () => void }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const lineRefs = useRef<(HTMLDivElement | null)[]>([])
   const activeIdxRef = useRef(0)
@@ -105,10 +105,18 @@ function SpotifyReader({ lines, lessonId, autoScroll, onFinish }: { lines: Line[
 
   useEffect(() => { applyStyles(0) }, [lines.length, applyStyles])
 
-  // Auto-scroll: drift the container down slowly; any manual scroll still works
-  // because we only add to scrollTop each frame.
+  // Listen sync: while narration is playing, the scroll follows the spoken
+  // line — the currently-read line glides into the center highlight.
   useEffect(() => {
-    if (!autoScroll) return
+    if (focusLine == null) return
+    lineRefs.current[focusLine]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [focusLine])
+
+  // Auto-scroll: drift the container down slowly; any manual scroll still works
+  // because we only add to scrollTop each frame. Paused while narration drives
+  // the scroll instead.
+  useEffect(() => {
+    if (!autoScroll || focusLine != null) return
     let raf = 0
     let last = performance.now()
     const step = (now: number) => {
@@ -127,7 +135,7 @@ function SpotifyReader({ lines, lessonId, autoScroll, onFinish }: { lines: Line[
     }
     raf = requestAnimationFrame(step)
     return () => cancelAnimationFrame(raf)
-  }, [autoScroll])
+  }, [autoScroll, focusLine])
 
   const onScroll = useCallback(() => {
     if (rafRef.current) return
@@ -302,6 +310,7 @@ function LessonContent({ lesson, roadmapId, onLevelUp }: { lesson: Lesson; roadm
   const [storyLoading, setStoryLoading] = useState(false)
   const [storyError, setStoryError] = useState(false)
   const [listening, setListening] = useState(false)
+  const [listenIdx, setListenIdx] = useState<number | null>(null)
   const listeningRef = useRef(false)
   const initialized = useRef(false)
 
@@ -347,11 +356,17 @@ function LessonContent({ lesson, roadmapId, onLevelUp }: { lesson: Lesson; roadm
     setStoryLoading(true)
     setStoryError(false)
     try {
+      // Hard client timeout: never leave the learner staring at a spinner if
+      // the request stalls — surface the retry UI instead.
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 150_000)
       const res = await fetch('/api/lesson', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lessonId: lesson.id, mode: 'story', language: lang }),
+        signal: controller.signal,
       })
+      clearTimeout(timer)
       const data = await res.json()
       if (!res.ok || !Array.isArray(data.sections)) throw new Error('story failed')
       setStory(data.sections)
@@ -367,24 +382,30 @@ function LessonContent({ lesson, roadmapId, onLevelUp }: { lesson: Lesson; roadm
     if (mode === 'story' && !story && !storyLoading && sections.length > 0) loadStory()
   }, [mode, story, storyLoading, sections.length, loadStory])
 
-  // Listen mode: read the visible content aloud in the owl's voice.
+  // Listen mode: read the visible content aloud in the owl's voice. The scroll
+  // follows the narration — each spoken line is handed to the reader so it can
+  // glide into the center highlight in sync with the audio.
   const startListening = useCallback(async () => {
     const source = mode === 'story' && story ? story : sections
     const lines = buildLines(source)
+    setAutoScroll(false) // narration drives the scroll now
     setListening(true)
     listeningRef.current = true
-    for (const line of lines) {
+    for (let i = 0; i < lines.length; i++) {
       if (!listeningRef.current) break
-      await speak(line.text, 'owl')
+      setListenIdx(i)
+      await speak(lines[i].text, 'owl')
     }
     listeningRef.current = false
     setListening(false)
+    setListenIdx(null)
   }, [mode, story, sections])
 
   const stopListening = useCallback(() => {
     listeningRef.current = false
     stopSpeaking()
     setListening(false)
+    setListenIdx(null)
   }, [])
 
   useEffect(() => () => { listeningRef.current = false; stopSpeaking() }, [])
@@ -524,7 +545,7 @@ function LessonContent({ lesson, roadmapId, onLevelUp }: { lesson: Lesson; roadm
           </div>
         )}
         {mode === 'spotify' && (
-          <SpotifyReader lines={buildLines(activeSections)} lessonId={lesson.id} autoScroll={autoScroll} onFinish={finish} />
+          <SpotifyReader lines={buildLines(activeSections)} lessonId={lesson.id} autoScroll={autoScroll} focusLine={listening ? listenIdx : null} onFinish={finish} />
         )}
         {(mode === 'book' || mode === 'plain') && (
           <FlowReader sections={activeSections} variant={mode} onFinish={finish} />

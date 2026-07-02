@@ -3,6 +3,9 @@ import { createClientFromRequest } from '@/lib/supabase-server'
 import { anthropic, MODEL } from '@/lib/anthropic'
 import { languageDirective } from '@/lib/generate'
 
+export const maxDuration = 60
+export const runtime = 'nodejs'
+
 export async function POST(req: Request) {
   const supabase = await createClientFromRequest(req)
   const { data: { user } } = await supabase.auth.getUser()

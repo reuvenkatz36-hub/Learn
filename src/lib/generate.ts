@@ -120,7 +120,12 @@ export async function generateStoryVersion(params: {
   sections: LessonContentSection[]
   language?: ContentLanguage
 }): Promise<LessonContentSection[]> {
-  const source = params.sections.map(s => `## ${s.title}\n${s.content}`).join('\n\n')
+  // Keep the prompt lean and the output bounded so the story lands well inside
+  // the serverless time budget.
+  const source = params.sections
+    .map(s => `## ${s.title}\n${s.content}`)
+    .join('\n\n')
+    .slice(0, 6000)
   const text = await complete(
     `Rewrite this lesson as an engaging STORY the learner reads for fun — a narrative with characters, a light plot and gentle tension that carries the learner through the material. Every important concept from the source must still be taught accurately inside the story.
 
@@ -132,11 +137,11 @@ ${source}
 Return ONLY valid JSON:
 {
   "sections": [
-    { "title": "string (chapter title)", "content": "string (200-400 words of story)", "type": "text" }
+    { "title": "string (chapter title)", "content": "string (150-300 words of story)", "type": "text" }
   ]
 }
-Write 5-8 chapters. Make it genuinely fun to read — not a dry lesson with a thin story wrapper. No markdown outside JSON strings.${languageDirective(params.language)}`,
-    4000,
+Write 4-6 chapters. Make it genuinely fun to read — not a dry lesson with a thin story wrapper. No markdown outside JSON strings.${languageDirective(params.language)}`,
+    3000,
   )
   const data = extractJson(text) as { sections: LessonContentSection[] }
   return data.sections
