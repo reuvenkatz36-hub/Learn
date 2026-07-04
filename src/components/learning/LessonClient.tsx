@@ -87,6 +87,56 @@ function SpotifyReader({ lines, lessonId, autoScroll, focusLine, onFinish }: { l
     })
   }, [])
 
+  // scrollTop that puts a line's middle exactly at the container's middle.
+  const centerTargetFor = useCallback((idx: number): number | null => {
+    const container = scrollRef.current
+    const el = lineRefs.current[idx]
+    if (!container || !el) return null
+    return Math.max(0, el.offsetTop + el.offsetHeight / 2 - container.clientHeight / 2)
+  }, [])
+
+  // Our own scroll animation: fixed short duration with ease-out, so the glide
+  // is equally quick for a one-line hop or a whole-screen jump. Native smooth
+  // scrolling takes longer the further it goes (and iOS drops it entirely) —
+  // that's what made the spoken line lag behind the middle.
+  const scrollAnim = useRef<number | null>(null)
+  const animateScrollTo = useCallback((target: number, duration = 400) => {
+    const container = scrollRef.current
+    if (!container) return
+    if (scrollAnim.current) cancelAnimationFrame(scrollAnim.current)
+    const start = container.scrollTop
+    const delta = target - start
+    if (Math.abs(delta) < 1) { container.scrollTop = target; return }
+    const t0 = performance.now()
+    const easeOutCubic = (p: number) => 1 - Math.pow(1 - p, 3)
+    const step = (now: number) => {
+      const p = Math.min(1, (now - t0) / duration)
+      container.scrollTop = start + delta * easeOutCubic(p)
+      scrollAnim.current = p < 1 ? requestAnimationFrame(step) : null
+    }
+    scrollAnim.current = requestAnimationFrame(step)
+  }, [])
+
+  // If the user grabs the page mid-glide, let go immediately — the next spoken
+  // line will re-center anyway.
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const cancel = () => {
+      if (scrollAnim.current) {
+        cancelAnimationFrame(scrollAnim.current)
+        scrollAnim.current = null
+      }
+    }
+    el.addEventListener('pointerdown', cancel, { passive: true })
+    el.addEventListener('wheel', cancel, { passive: true })
+    return () => {
+      el.removeEventListener('pointerdown', cancel)
+      el.removeEventListener('wheel', cancel)
+      cancel()
+    }
+  }, [])
+
   useEffect(() => {
     if (restored.current || lines.length === 0) return
     restored.current = true
@@ -95,39 +145,31 @@ function SpotifyReader({ lines, lessonId, autoScroll, focusLine, onFinish }: { l
       const idx = Math.min(parseInt(saved, 10), lines.length - 1)
       if (idx > 0) {
         setTimeout(() => {
-          lineRefs.current[idx]?.scrollIntoView({ behavior: 'instant', block: 'center' })
+          // Direct scrollTop math — scrollIntoView inside a scroll container is
+          // unreliable on iOS Safari.
+          const target = centerTargetFor(idx)
+          if (target != null && scrollRef.current) scrollRef.current.scrollTop = target
           activeIdxRef.current = idx
           applyStyles(idx)
         }, 100)
       }
     }
-  }, [lines.length, lessonId, applyStyles])
+  }, [lines.length, lessonId, applyStyles, centerTargetFor])
 
   useEffect(() => { applyStyles(0) }, [lines.length, applyStyles])
 
-  // Listen sync: while narration is playing, the spoken line becomes the
-  // highlighted line IMMEDIATELY (not via scroll events — iOS Safari can drop
-  // programmatic smooth scrolls, which used to leave the highlight stuck at the
-  // top while the voice kept going), and the container scrolls to center it.
+  // Listen sync: the spoken line lights up the moment its narration starts and
+  // glides to the exact center. Highlight is driven directly (not via scroll
+  // events), so audio and text can never drift apart.
   const focusRef = useRef<number | null>(null)
   focusRef.current = focusLine ?? null
   useEffect(() => {
     if (focusLine == null) return
-    // 1. Light up the spoken line right now, in sync with the audio.
     activeIdxRef.current = focusLine
     applyStyles(focusLine)
-    // 2. Center it. scrollTo on the container is far more reliable on iOS than
-    //    scrollIntoView; fall back to an instant jump if smooth isn't supported.
-    const container = scrollRef.current
-    const el = lineRefs.current[focusLine]
-    if (!container || !el) return
-    const target = Math.max(0, el.offsetTop + el.offsetHeight / 2 - container.clientHeight / 2)
-    try {
-      container.scrollTo({ top: target, behavior: 'smooth' })
-    } catch {
-      container.scrollTop = target
-    }
-  }, [focusLine, applyStyles])
+    const target = centerTargetFor(focusLine)
+    if (target != null) animateScrollTo(target)
+  }, [focusLine, applyStyles, centerTargetFor, animateScrollTo])
 
   // Auto-scroll: drift the container down slowly; any manual scroll still works
   // because we only add to scrollTop each frame. Paused while narration drives
